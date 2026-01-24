@@ -2,6 +2,8 @@ import arcade
 import arcade.gui
 from arcade.gui.widgets.buttons import UIFlatButtonStyle
 
+from levels_menu import LevelsMenu
+
 # Константы
 TILE_SIZE = 64
 TILEMAP_SCALING = 2.0
@@ -11,7 +13,11 @@ BACKGROUND_SPEED = 100
 class PlayButton(arcade.gui.UIFlatButton):
     """Кнопка Play"""
 
-    pass
+    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+        # Переключаемся на меню уровней
+        levels_menu_view = LevelsMenu()
+        levels_menu_view.setup()
+        self.parent.window.show_view(levels_menu_view)
 
 
 class ExitButton(arcade.gui.UIFlatButton):
