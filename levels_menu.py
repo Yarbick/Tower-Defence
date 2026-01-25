@@ -44,14 +44,16 @@ class LevelsMenu(arcade.View):
         # Загружаем шрифты
         arcade.load_font("resources/assets/fonts/CGXYZLCD/CGXYZLCD-Regular.otf")
 
-        # Аттрибуты интерфейса:
-        # Камера
-        self.gui_camera: arcade.Camera2D | None = None
         # Размер окна
         self.screen_width: int | None = None
         self.screen_height: int | None = None
+
+        # Камера
+        self.gui_camera: arcade.Camera2D | None = None
+
         # Контейнер для текста
         self.batch: Batch | None = None
+
         # Менеджер интерфейса
         self.ui_manager: arcade.gui.UIManager | None = None
 

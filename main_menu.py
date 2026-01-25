@@ -42,21 +42,21 @@ class MainMenu(arcade.View):
         # Загружаем текстуры
         self.logo_texture = arcade.load_texture("resources/assets/images/logo/logo_text.png")
 
-        # Аттрибуты игрового мира:
-        # Камера
-        self.world_camera: arcade.Camera2D | None = arcade.camera.Camera2D()
-        # Задний фон
-        self.background_list: arcade.SpriteList | None = None
+        # Размер окна
+        self.screen_width: int | None = None
+        self.screen_height: int | None = None
+
         # Размер мира
         self.world_width: int | None = None
         self.world_height: int | None = None
 
-        # Аттрибуты интерфейса:
-        # Камера
-        self.gui_camera: arcade.Camera2D | None = arcade.camera.Camera2D()
-        # Размер окна
-        self.screen_width: int | None = None
-        self.screen_height: int | None = None
+        # Задний фон
+        self.background_list: arcade.SpriteList | None = None
+
+        # Камеры
+        self.world_camera: arcade.Camera2D | None = None
+        self.gui_camera: arcade.Camera2D | None = None
+
         # Менеджер интерфейса
         self.ui_manager: arcade.gui.UIManager | None = None
 
