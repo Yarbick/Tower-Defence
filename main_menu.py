@@ -15,7 +15,9 @@ class PlayButton(arcade.gui.UIFlatButton):
 
     def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
         # Переключаемся на меню уровней
-        levels_menu_view = LevelsMenu(self.parent.window.current_view)
+        main_menu_view = self.parent.window.current_view
+        main_menu_view.ui_manager.disable()
+        levels_menu_view = LevelsMenu(main_menu_view)
         levels_menu_view.setup()
         self.parent.window.show_view(levels_menu_view)
 
