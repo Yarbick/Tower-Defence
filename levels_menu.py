@@ -4,6 +4,9 @@ from pyglet.graphics import Batch
 from arcade.gui.widgets.buttons import UIFlatButtonStyle
 
 
+LEVELS_COUNT = 5
+
+
 class BackButton(arcade.gui.UIFlatButton):
     """Кнопка Back"""
 
@@ -14,7 +17,20 @@ class BackButton(arcade.gui.UIFlatButton):
         self.parent.window.show_view(main_menu_view)
 
 
+class LevelButton(arcade.gui.UIFlatButton):
+    """Кнопка переключения на уровень"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.level: None = None
+
+    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+        # Переключение на уровень
+        pass
+
+
 class LevelsMenu(arcade.View):
+    """Меню выбора уровня"""
+
     def __init__(self, parent):
         super().__init__()
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
@@ -39,6 +55,15 @@ class LevelsMenu(arcade.View):
         self.screen_width: int = self.width
         self.screen_height: int = self.height
 
+        # Создание текста
+        self.batch = Batch()
+        # Заголовок
+        self.header_text = arcade.Text(
+            "Levels",
+            20, self.screen_height - 20,
+            arcade.color.WHITE, 20, font_name="CGXYZ LCD",
+            anchor_y="top", batch=self.batch
+        )
         # Создание виджетов
         self.ui_manager = arcade.gui.UIManager()
         self.ui_manager.enable()
@@ -55,16 +80,18 @@ class LevelsMenu(arcade.View):
             width=128, height=64, text="BACK", style=button_style
         )
         self.ui_manager.add(self.back_button)
-
-        # Создание текста
-        self.batch = Batch()
-        # Заголовок
-        self.header_text = arcade.Text(
-            "Levels",
-            20, self.screen_height - 20,
-            arcade.color.WHITE, 20, font_name="CGXYZ LCD",
-            anchor_y="top", batch=self.batch
+        # Layout для кнопок уровней
+        self.levels_layout = arcade.gui.UIBoxLayout(
+            x=20, y=self.screen_height - self.header_text.font_size * 4 - 10 - LEVELS_COUNT * 60,
+            vertical=True, space_between=10
         )
+        # Добавление кнопок
+        for i in range(1, LEVELS_COUNT + 1):
+            level_button = LevelButton(
+                width=self.screen_width - self.levels_layout.left * 2, text=f"Level {i}", style=button_style
+            )
+            self.levels_layout.add(level_button)
+        self.ui_manager.add(self.levels_layout)
 
         # Создание камеры
         self.gui_camera = arcade.camera.Camera2D()
@@ -95,3 +122,6 @@ class LevelsMenu(arcade.View):
         # Настройка кнопок под новые размеры
         self.back_button.left = self.screen_width - 133
         self.back_button.bottom = self.screen_height - 70
+        for level_button in self.levels_layout.children:
+            level_button.width = self.screen_width - self.levels_layout.left * 2
+        self.levels_layout.width = self.screen_width - self.levels_layout.left * 2
