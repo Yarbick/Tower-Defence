@@ -35,6 +35,7 @@ class MainMenu(arcade.View):
 
     def __init__(self):
         super().__init__()
+        arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
 
         # Загружаем шрифты
         arcade.load_font("resources/assets/fonts/CGXYZLCD/CGXYZLCD-Regular.otf")

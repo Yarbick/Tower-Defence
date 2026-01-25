@@ -3,6 +3,7 @@ import arcade.gui
 from pyglet.graphics import Batch
 from arcade.gui.widgets.buttons import UIFlatButtonStyle
 
+from level import Level
 
 LEVELS_COUNT = 5
 
@@ -21,10 +22,14 @@ class LevelButton(arcade.gui.UIFlatButton):
     """Кнопка переключения на уровень"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.level: None = None
+        self.level_name: None = None
 
     def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
         # Переключение на уровень
+        self.parent.parent.window.current_view.ui_manager.disable()
+        level_view = Level(self.level_name)
+        level_view.setup()
+        self.parent.parent.window.show_view(level_view)
         pass
 
 
@@ -90,6 +95,7 @@ class LevelsMenu(arcade.View):
             level_button = LevelButton(
                 width=self.screen_width - self.levels_layout.left * 2, text=f"Level {i}", style=button_style
             )
+            level_button.level_name = str(i)
             self.levels_layout.add(level_button)
         self.ui_manager.add(self.levels_layout)
 
