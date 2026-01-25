@@ -15,7 +15,7 @@ class PlayButton(arcade.gui.UIFlatButton):
 
     def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
         # Переключаемся на меню уровней
-        levels_menu_view = LevelsMenu()
+        levels_menu_view = LevelsMenu(self.parent.window.current_view)
         levels_menu_view.setup()
         self.parent.window.show_view(levels_menu_view)
 
@@ -41,7 +41,7 @@ class MainMenu(arcade.View):
 
         # Аттрибуты игрового мира:
         # Камера
-        self.world_camera: arcade.Camera2D = arcade.camera.Camera2D()
+        self.world_camera: arcade.Camera2D | None = arcade.camera.Camera2D()
         # Задний фон
         self.background_list: arcade.SpriteList | None = None
         # Размер мира
@@ -50,10 +50,18 @@ class MainMenu(arcade.View):
 
         # Аттрибуты интерфейса:
         # Камера
-        self.gui_camera: arcade.Camera2D = arcade.camera.Camera2D()
+        self.gui_camera: arcade.Camera2D | None = arcade.camera.Camera2D()
         # Размер окна
-        self.screen_width: int = self.window.screen.width
-        self.screen_height: int = self.window.screen.height
+        self.screen_width: int | None = None
+        self.screen_height: int | None = None
+        # Менеджер интерфейса
+        self.ui_manager: arcade.gui.UIManager | None = None
+
+    def setup(self) -> None:
+        # Получение размеров окна
+        self.screen_width: int = self.width
+        self.screen_height: int = self.height
+
         # Создание виджетов
         self.ui_manager = arcade.gui.UIManager()
         self.ui_manager.enable()
@@ -66,25 +74,26 @@ class MainMenu(arcade.View):
         }
         # Кнопка Play
         self.play_button = PlayButton(
-            x=self.screen_width * 0.5, y=self.screen_height * 0.7 - 125,
+            x=self.screen_width * 0.5 - 123, y=self.screen_height * 0.7 - 125 - 32,
             width=256, height=64, text="PLAY", style=button_style
         )
         self.ui_manager.add(self.play_button)
         # Кнопка Exit
         self.exit_button = ExitButton(
-            x=self.screen_width * 0.5, y=self.screen_height * 0.7 - 200,
+            x=self.screen_width * 0.5 - 123, y=self.screen_height * 0.7 - 200 - 32,
             width=256, height=64, text="EXIT", style=button_style
         )
         self.ui_manager.add(self.exit_button)
 
-    def setup(self) -> None:
         # Загрузка карты
         tilemap: arcade.TileMap = arcade.load_tilemap("resources/levels/menu.tmx", scaling=TILEMAP_SCALING)
         self.background_list = tilemap.sprite_lists["background"]
         # Получение размеров карты
         self.world_width, self.world_height = tilemap.width * TILE_SIZE, tilemap.height * TILE_SIZE
 
-        # Перемещение камеры в начальную позицию
+        # Создание камер
+        self.gui_camera = arcade.camera.Camera2D()
+        self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.screen_width * 0.5, self.screen_height * 0.5
         self.world_camera.move_direction = 1  # Аттрибут камеры для направления движения
 
@@ -119,9 +128,17 @@ class MainMenu(arcade.View):
 
         # Настройка камер под новые размеры
         self.world_camera.match_window()
+        self.world_camera.position = (
+            min(self.world_width - self.screen_width * 0.5,
+                max(self.screen_width * 0.5, self.world_camera.position[0])),
+            min(self.world_height - self.screen_height * 0.5,
+                max(self.screen_height * 0.5, self.world_camera.position[1]))
+        )
         self.gui_camera.match_window()
-        self.gui_camera.position = self.screen_width * 0.5, self.screen_height * 0.5
-
+        self.gui_camera.position = (
+            self.screen_width * 0.5,
+            self.screen_height * 0.5
+        )
         # Настройка кнопок под новые размеры
         self.play_button.center_x, self.play_button.center_y = self.screen_width * 0.5, self.screen_height * 0.7 - 125
         self.exit_button.center_x, self.exit_button.center_y = self.screen_width * 0.5, self.screen_height * 0.7 - 200
