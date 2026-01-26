@@ -1,4 +1,5 @@
 import arcade
+from pyglet.graphics import Batch
 
 import controls
 import enemy
@@ -82,6 +83,15 @@ class Level(arcade.View):
 
         # Камеры
         self.world_camera: arcade.Camera2D | None = None
+        self.gui_camera: arcade.Camera2D | None = None
+
+        # Атрибуты для логики игры
+        self.player_base_health: int | None = None
+        self.game_status: bool | None = None  # None - игра не закончена, False - поражение, True - победа
+
+        # Атрибуты интерфейса
+        self.batch: Batch | None = None
+        self.health_text: arcade.Text | None = None
 
         # Нажатые клавиши
         self.keys_pressed: set | None = None
@@ -102,6 +112,7 @@ class Level(arcade.View):
 
         # Создание противников
         self.enemies_list = arcade.SpriteList()
+        self.enemies_list.parent = self  # Создаём ссылку на родителя для получения урона по базе
         # Создание волн
         self.waves = waves.Waves(
             LEVELS[self.level_name]["waves"],
@@ -115,6 +126,18 @@ class Level(arcade.View):
         # Создание камер
         self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.world_width * 0.5, self.world_height * 0.5
+        self.gui_camera = arcade.camera.Camera2D()
+
+        # Обновление атрибутов логики игры до значений по умолчанию
+        self.player_base_health = 20
+        self.game_status = None
+
+        # Создание интерфейса
+        self.batch = Batch()
+        self.health_text = arcade.Text(
+            f"Health: {max(0, self.player_base_health)}", 20, self.screen_height - 20, arcade.color.WHITE,
+            font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
+        )
 
         # Обнуление клавиш
         self.keys_pressed = set()
@@ -133,11 +156,19 @@ class Level(arcade.View):
         # Отрисовка игровых объектов
         self.enemies_list.draw()
 
+        # Отрисовка интерфейса
+        self.gui_camera.use()
+        # Отрисовка текста
+        self.batch.draw()
+
     def on_update(self, delta_time: float) -> None:
+        if self.game_status is not None:
+            return
+
         # Движение камеры
         self.world_camera_move(delta_time)
 
-        # Обновление волны
+        # Обновление волн
         if not self.waves.running and arcade.key.SPACE in self.keys_pressed:
             self.waves.running = True
         self.waves.update(delta_time)
@@ -145,6 +176,9 @@ class Level(arcade.View):
         # Движение врагов
         self.enemies_list.update()
         self.enemies_list.update_animation()
+
+        # Обновление интерфейса
+        self.health_text.text = f"Health: {max(0, self.player_base_health)}"
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         self.keys_pressed.add(key)
@@ -159,6 +193,7 @@ class Level(arcade.View):
         # Настраиваем камеры под новые размеры
         self.world_camera.match_window()
         self.check_camera_borders(self.world_camera)
+        self.gui_camera.match_window()
 
     # Методы для камер
     def check_camera_borders(self, camera: arcade.Camera2D) -> None:

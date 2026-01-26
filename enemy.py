@@ -16,6 +16,7 @@ class Enemy(arcade.Sprite):
         self.health: int | None = None
         self.armor: int | None = None
         self.speed: int | None = None
+        self.damage: int | None = None
 
         # Направление движения
         self.direction_x: int | None = None
@@ -71,6 +72,9 @@ class Enemy(arcade.Sprite):
             self.curr_part += 1
             # Смерть при завершении пути
             if self.curr_part >= len(self.way):
+                # Нанесение урона базе
+                self.sprite_lists[0].parent.player_base_health -= self.damage
+                # Смерть
                 self.dead()
                 return
 
@@ -141,6 +145,7 @@ class BasicEnemy(Enemy):
         self.health: int = 100 * difficulty
         self.armor: int = 0.2 + (difficulty - 1) / 2
         self.speed: int = 200
+        self.damage: int = 1
 
         # Направление движения
         self.direction_x: int | None = None
@@ -177,6 +182,7 @@ class FastEnemy(Enemy):
         self.health: int = 75 * difficulty
         self.armor: int = 0
         self.speed: int = 350
+        self.damage: int = 1
 
         # Направление движения
         self.direction_x: int | None = None
@@ -213,6 +219,7 @@ class BigEnemy(Enemy):
         self.health: int = 250 * difficulty
         self.armor: int = 0.4 + (difficulty - 1) / 2
         self.speed: int = 125
+        self.damage: int = 2
 
         # Направление движения
         self.direction_x: int | None = None
@@ -249,6 +256,7 @@ class PushEnemy(Enemy):
         self.health: int = 225 * difficulty
         self.armor: int = 0.3 + (difficulty - 1) / 2
         self.speed: int = 275
+        self.damage: int = 2
 
         # Направление движения
         self.direction_x: int | None = None
