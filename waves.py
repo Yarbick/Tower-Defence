@@ -25,9 +25,11 @@ class Waves:
         self.wave_timer = wave_rate  # Время с появления последней волны
         self.spawn_rate = 0.2  # Скорость появления врагов
         self.spawn_timer = 0.0  # Время с появления последнего врага
+        self.skip_rate = 4.0  # Лимит с вызова волны для вызова новой
 
         # Флаги
-        self.running = False  # Пора ли запускать волны
+        self.running: bool = False  # Пора ли запускать волны
+        self.skipping: bool = False  # Можно ли вызвать следующую волну в ручную
 
     def update(self, delta_time: float):
         # Проверка на запуск волн
@@ -44,10 +46,16 @@ class Waves:
             self.spawn_timer += delta_time
             self.spawn_enemy()
 
+    def skip_wave(self) -> None:
+        """Вызов следующей волны вручную"""
+
+        if self.wave_timer >= self.skip_rate and self.waves:
+            self.skipping = True
+
     def spawn_wave(self) -> None:
         """Вызов волны"""
 
-        if self.wave_timer >= self.wave_rate:
+        if self.wave_timer >= self.wave_rate or self.skipping:
             # Добавление врагов в очередь
             self.enemy_queue.extend(self.waves.pop(0))
             # Повышение сложности
@@ -55,6 +63,8 @@ class Waves:
 
             # Сброс таймера
             self.wave_timer = 0.0
+            # Сброс флага
+            self.skipping = False
 
     def spawn_enemy(self) -> None:
         """Создание врагов"""

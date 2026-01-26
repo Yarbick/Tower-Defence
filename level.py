@@ -86,12 +86,16 @@ class Level(arcade.View):
         self.gui_camera: arcade.Camera2D | None = None
 
         # Атрибуты для логики игры
-        self.player_base_health: int | None = None
+        self.health: int | None = None
         self.game_status: bool | None = None  # None - игра не закончена, False - поражение, True - победа
 
         # Атрибуты интерфейса
+        # Текст
         self.batch: Batch | None = None
         self.health_text: arcade.Text | None = None
+        self.wave_number_text: arcade.Text | None = None
+        self.time_left_text: arcade.Text | None = None
+        self.skip_text: arcade.Text | None = None
 
         # Нажатые клавиши
         self.keys_pressed: set | None = None
@@ -129,14 +133,31 @@ class Level(arcade.View):
         self.gui_camera = arcade.camera.Camera2D()
 
         # Обновление атрибутов логики игры до значений по умолчанию
-        self.player_base_health = 20
+        self.health = 20
         self.game_status = None
 
         # Создание интерфейса
+        # Текст
         self.batch = Batch()
         self.health_text = arcade.Text(
-            f"Health: {max(0, self.player_base_health)}", 20, self.screen_height - 20, arcade.color.WHITE,
+            f"Health: {max(0, self.health)}",
+            20, self.screen_height - 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
+        )
+        self.wave_number_text = arcade.Text(
+            f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}",
+            20, 20, arcade.color.WHITE,
+            font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
+        )
+        self.time_left_text = arcade.Text(
+            f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}",
+            180, 20, arcade.color.WHITE,
+            font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
+        )
+        self.skip_text = arcade.Text(
+            f"SKIP",
+            450, 20, arcade.color.WHITE,
+            font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
 
         # Обнуление клавиш
@@ -169,8 +190,11 @@ class Level(arcade.View):
         self.world_camera_move(delta_time)
 
         # Обновление волн
-        if not self.waves.running and arcade.key.SPACE in self.keys_pressed:
-            self.waves.running = True
+        if controls.skip_wave in self.keys_pressed:
+            if not self.waves.running:
+                self.waves.running = True
+            else:
+                self.waves.skip_wave()
         self.waves.update(delta_time)
 
         # Движение врагов
@@ -178,7 +202,11 @@ class Level(arcade.View):
         self.enemies_list.update_animation()
 
         # Обновление интерфейса
-        self.health_text.text = f"Health: {max(0, self.player_base_health)}"
+        # Текст
+        self.health_text.text = f"Health: {max(0, self.health)}"
+        self.wave_number_text.text = f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}"
+        self.time_left_text.text = f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}"
+        self.skip_text.batch = self.batch if self.waves.wave_timer >= self.waves.skip_rate else None
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         self.keys_pressed.add(key)
@@ -190,10 +218,17 @@ class Level(arcade.View):
         # Получаем новые размеры экрана
         self.screen_width, self.screen_height = width, height
 
-        # Настраиваем камеры под новые размеры
+        # Настройка камер под новые размеры
         self.world_camera.match_window()
         self.check_camera_borders(self.world_camera)
         self.gui_camera.match_window()
+        self.gui_camera.position = (
+            self.screen_width * 0.5,
+            self.screen_height * 0.5
+        )
+
+        # Настройка интерфейса под новые размеры
+        self.health_text.y = self.screen_height - 20
 
     # Методы для камер
     def check_camera_borders(self, camera: arcade.Camera2D) -> None:

@@ -73,7 +73,7 @@ class Enemy(arcade.Sprite):
             # Смерть при завершении пути
             if self.curr_part >= len(self.way):
                 # Нанесение урона базе
-                self.sprite_lists[0].parent.player_base_health -= self.damage
+                self.sprite_lists[0].parent.health -= self.damage
                 # Смерть
                 self.dead()
                 return
