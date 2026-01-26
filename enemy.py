@@ -1,15 +1,16 @@
 import arcade
 
+ENEMY_SCALING = 3.0
+DEAD_ANIMATION_SPEED = 1 / 30
+
 
 class Enemy(arcade.Sprite):
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
-        super().__init__(center_x=center_x, center_y=center_y)
+        super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture | None = None
         self.dead_animation_textures: tuple[arcade.Texture] | None = None
-
-        self.texture = self.idle_texture
 
         # Показатели врага
         self.health: int | None = None
@@ -32,11 +33,10 @@ class Enemy(arcade.Sprite):
         self.dead_animation_running: bool = False
         self.dead_animation_frame: int = 0
         self.dead_animation_duration: float = 0.0
-        self.dead_animation_speed: float = 1 / len(self.dead_animation_textures) * 3
 
     def update(self, delta_time: float = 1 / 60) -> None:
         # Проверка на смерть
-        if self.dead():
+        if self.is_dead:
             return
 
         # Движение
@@ -46,7 +46,7 @@ class Enemy(arcade.Sprite):
         # Анимация смерти
         if self.dead_animation_running:
             self.dead_animation_duration += delta_time
-            if self.dead_animation_duration >= self.dead_animation_speed:
+            if self.dead_animation_duration >= DEAD_ANIMATION_SPEED:
                 self.dead_animation_duration = 0.0
 
                 self.dead_animation_frame += 1
@@ -55,20 +55,16 @@ class Enemy(arcade.Sprite):
                     # Удаление врага после завершения анимации
                     self.remove_from_sprite_lists()
                 else:
-                    self.texture = self.dead_animation_texture[self.dead_animation_frame]
+                    self.texture = self.dead_animation_textures[self.dead_animation_frame]
 
     def move(self, delta_time: float) -> None:
-        """Движение врага"""
-
-        # Обновление позиции
-        self.center_x += self.speed * self.direction_x * delta_time
-        self.center_y += self.speed * self.direction_y * delta_time
+        """Движение"""
 
         # Проверка на прохождение отрезка пути
-        if (((self.way[self.curr_part][0] <= self.center_x and self.direction_x == 1) or
-             (self.way[self.curr_part][0] >= self.center_x and self.direction_x == -1)) and
-                ((self.way[self.curr_part][1] <= self.center_y and self.direction_y == 1) or
-                 (self.way[self.curr_part][1] >= self.center_y and self.direction_y == -1))):
+        if (((self.way[self.curr_part][0] <= self.center_x and self.direction_x != -1) or
+             (self.way[self.curr_part][0] >= self.center_x and self.direction_x != 1)) and
+                ((self.way[self.curr_part][1] <= self.center_y and self.direction_y != -1) or
+                 (self.way[self.curr_part][1] >= self.center_y and self.direction_y != 1))):
             # Закрепление врага на конец прошлого отрезка пути
             self.center_x, self.center_y = self.way[self.curr_part]
 
@@ -103,8 +99,21 @@ class Enemy(arcade.Sprite):
             elif self.direction_y == -1:
                 self.angle = 180
 
+        # Обновление позиции
+        self.center_x += self.speed * self.direction_x * delta_time
+        self.center_y += self.speed * self.direction_y * delta_time
+
+    def get_damage(self, damage):
+        """Получение урона"""
+
+        # Определение и получение урона
+        self.health -= damage * (1 - self.armor)
+        # Проверка на смерть
+        if self.health <= 0:
+            self.dead()
+
     def dead(self) -> None:
-        """Смерть врага"""
+        """Смерть"""
 
         # Переключение флага
         self.is_dead = True
@@ -114,3 +123,147 @@ class Enemy(arcade.Sprite):
         self.dead_animation_duration = 0.0
         self.dead_animation_frame = 0
         self.texture = self.dead_animation_textures[self.dead_animation_frame]
+
+
+class BasicEnemy(Enemy):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+
+        # Загрузка текстур
+        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/basic_enemy/idle.png")
+        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
+            arcade.load_texture(f"resources/assets/images/enemies/basic_enemy/dead_animation/dead_{i}.png")
+            for i in range(1, 6)
+        )
+
+        self.texture = self.idle_texture
+
+        # Показатели врага
+        self.health: int = 100 * difficulty
+        self.armor: int = 0.2 + (difficulty - 1) / 2
+        self.speed: int = 200
+
+        # Направление движения
+        self.direction_x: int | None = None
+        self.direction_y: int | None = None
+
+        # Путь к базе игрока
+        self.way: tuple = way
+        self.curr_part: int = 0
+
+        # Флаги
+        self.is_dead = False
+
+        # Анимации
+        # Анимация смерти
+        self.dead_animation_running: bool = False
+        self.dead_animation_frame: int = 0
+        self.dead_animation_duration: float = 0.0
+
+
+class FastEnemy(Enemy):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+
+        # Загрузка текстур
+        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/fast_enemy/idle.png")
+        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
+            arcade.load_texture(f"resources/assets/images/enemies/fast_enemy/dead_animation/dead_{i}.png")
+            for i in range(1, 6)
+        )
+
+        self.texture = self.idle_texture
+
+        # Показатели врага
+        self.health: int = 75 * difficulty
+        self.armor: int = 0
+        self.speed: int = 350
+
+        # Направление движения
+        self.direction_x: int | None = None
+        self.direction_y: int | None = None
+
+        # Путь к базе игрока
+        self.way: tuple = way
+        self.curr_part: int = 0
+
+        # Флаги
+        self.is_dead = False
+
+        # Анимации
+        # Анимация смерти
+        self.dead_animation_running: bool = False
+        self.dead_animation_frame: int = 0
+        self.dead_animation_duration: float = 0.0
+
+
+class BigEnemy(Enemy):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+
+        # Загрузка текстур
+        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/big_enemy/idle.png")
+        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
+            arcade.load_texture(f"resources/assets/images/enemies/big_enemy/dead_animation/dead_{i}.png")
+            for i in range(1, 6)
+        )
+
+        self.texture = self.idle_texture
+
+        # Показатели врага
+        self.health: int = 250 * difficulty
+        self.armor: int = 0.4 + (difficulty - 1) / 2
+        self.speed: int = 125
+
+        # Направление движения
+        self.direction_x: int | None = None
+        self.direction_y: int | None = None
+
+        # Путь к базе игрока
+        self.way: tuple = way
+        self.curr_part: int = 0
+
+        # Флаги
+        self.is_dead = False
+
+        # Анимации
+        # Анимация смерти
+        self.dead_animation_running: bool = False
+        self.dead_animation_frame: int = 0
+        self.dead_animation_duration: float = 0.0
+
+
+class PushEnemy(Enemy):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+
+        # Загрузка текстур
+        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/push_enemy/idle.png")
+        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
+            arcade.load_texture(f"resources/assets/images/enemies/push_enemy/dead_animation/dead_{i}.png")
+            for i in range(1, 6)
+        )
+
+        self.texture = self.idle_texture
+
+        # Показатели врага
+        self.health: int = 225 * difficulty
+        self.armor: int = 0.3 + (difficulty - 1) / 2
+        self.speed: int = 275
+
+        # Направление движения
+        self.direction_x: int | None = None
+        self.direction_y: int | None = None
+
+        # Путь к базе игрока
+        self.way: tuple = way
+        self.curr_part: int = 0
+
+        # Флаги
+        self.is_dead = False
+
+        # Анимации
+        # Анимация смерти
+        self.dead_animation_running: bool = False
+        self.dead_animation_frame: int = 0
+        self.dead_animation_duration: float = 0.0

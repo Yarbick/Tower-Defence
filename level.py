@@ -1,6 +1,8 @@
 import arcade
 import controls
 
+import enemy
+
 TILE_SIZE = 64
 TILEMAP_SCALING = 2.0
 LEVELS = {
@@ -56,6 +58,14 @@ class Level(arcade.View):
         self.world_width: int | None = None
         self.world_height: int | None = None
 
+        # Сложность
+        self.difficulty: float = LEVELS[level_name]["difficulty"]
+        # Путь для врагов
+        self.enemies_way: list | None = None
+
+        # Игровые объекты
+        self.enemies_list: arcade.SpriteList | None = None
+
         # Камеры
         self.world_camera: arcade.Camera2D | None = None
 
@@ -75,6 +85,11 @@ class Level(arcade.View):
         # Получение размеров карты
         self.world_width, self.world_height = self.tilemap.width * TILE_SIZE, self.tilemap.height * TILE_SIZE
 
+        # Нахождение пути для противников
+        self.find_enemies_way()
+        # Создание противников
+        self.enemies_list = arcade.SpriteList()
+
         # Создание камер
         self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.world_width * 0.5, self.world_height * 0.5
@@ -93,10 +108,16 @@ class Level(arcade.View):
         self.player_base_list.draw()
         self.road_list.draw()
         self.platforms_list.draw()
+        # Отрисовка игровых объектов
+        self.enemies_list.draw()
 
     def on_update(self, delta_time: float) -> None:
         # Движение камеры
         self.world_camera_move(delta_time)
+
+        # Движение врагов
+        self.enemies_list.update()
+        self.enemies_list.update_animation()
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         self.keys_pressed.add(key)
@@ -139,3 +160,57 @@ class Level(arcade.View):
         self.world_camera.position = tuple(new_position)
         # Проверка на выход за границы
         self.check_camera_borders(self.world_camera)
+
+    def find_enemies_way(self):
+        """Нахождение пути для врагов"""
+
+        # Подготовка данных для алгоритма
+        # Размеры поля
+        rows: int
+        cols: int
+        # Координаты базы врага
+        start_row: int
+        start_col: int
+        # Координаты базы игрока
+        end_row: int
+        end_col: int
+        # Список дорог
+        road_grid: list[list[int]]
+
+        # Пересоздание списка
+        self.enemies_way = []
+        # Размер поля
+        rows, cols = self.tilemap.height, self.tilemap.width
+        # Нахождение базы врагов
+        enemy_base_grid = self.tilemap.get_tilemap_layer("enemy_base").data
+        start_row, start_col = [
+            (row, col) for row in range(rows) for col in range(cols) if enemy_base_grid[row][col] != 0
+        ][0]
+        # Нахождение базы игрока
+        player_base_grid = self.tilemap.get_tilemap_layer("player_base").data
+        end_row, end_col = [
+            (row, col) for row in range(rows) for col in range(cols) if player_base_grid[row][col] != 0
+        ][0]
+        # Получение поля с дорогами
+        road_grid = self.tilemap.get_tilemap_layer("road").data
+
+        # Алгоритм поиска пути
+        parent: tuple[int, int] | None = None  # Предыдущая клетка
+        row, col = start_row, start_col  # Текущая клетка
+        while True:
+            # Добавление клетки в путь
+            self.enemies_way.append(((col + 0.5) * TILE_SIZE, (rows - row - 0.5) * TILE_SIZE))
+
+            # Останавливает алгоритм, если нашёл базу игрока
+            if (row, col) == (end_row, end_col):
+                break
+
+            # Поиск соседних дорог
+            neighbors = [(row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)]
+            for nh_row, nh_col in neighbors:
+                if 0 <= nh_row < rows and 0 <= nh_col < cols:
+                    if ((nh_row, nh_col) == (end_row, end_col) or
+                            (nh_row, nh_col) != parent and road_grid[nh_row][nh_col] != 0):
+                        parent = row, col
+                        row, col = nh_row, nh_col
+                        break
