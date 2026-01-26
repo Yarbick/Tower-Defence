@@ -1,34 +1,49 @@
 import arcade
-import controls
 
+import controls
 import enemy
+import waves
 
 TILE_SIZE = 64
 TILEMAP_SCALING = 2.0
 LEVELS = {
     "1": {
         "tilemap": "resources/levels/level1.tmx",
-        "waves": None,
+        "waves": (
+            (enemy.BasicEnemy for _ in range(5)),
+            (enemy.BasicEnemy for _ in range(6)),
+            (enemy.BasicEnemy for _ in range(8)),
+            (enemy.BasicEnemy for _ in range(10)),
+            (enemy.BasicEnemy for _ in range(15)),
+            (enemy.BasicEnemy for _ in range(20)),
+            (enemy.BasicEnemy for _ in range(25)),
+            (enemy.BasicEnemy for _ in range(30))
+        ),
+        "wave_rate": 10.0,
         "difficulty": 1.0
     },
     "2": {
         "tilemap": "resources/levels/level2.tmx",
         "waves": None,
+        "wave_rate": 15.0,
         "difficulty": 1.1
     },
     "3": {
         "tilemap": "resources/levels/level3.tmx",
         "waves": None,
+        "wave_rate": 15.0,
         "difficulty": 1.2
     },
     "4": {
         "tilemap": "resources/levels/level4.tmx",
         "waves": None,
+        "wave_rate": 20.0,
         "difficulty": 1.3
     },
     "5": {
         "tilemap": "resources/levels/level5.tmx",
         "waves": None,
+        "wave_rate": 20.0,
         "difficulty": 1.5
     }
 }
@@ -42,13 +57,14 @@ class Level(arcade.View):
     def __init__(self, level_name: str):
         super().__init__()
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
+        self.level_name = level_name
 
         # Размеры окна
         self.screen_width: int | None = None
         self.screen_height: int | None = None
 
         # Карта
-        self.tilemap: arcade.TileMap = arcade.load_tilemap(LEVELS[level_name]["tilemap"], scaling=TILEMAP_SCALING)
+        self.tilemap: arcade.TileMap | None = None
         self.background_list: arcade.SpriteList | None = None
         self.enemy_base_list: arcade.SpriteList | None = None
         self.player_base_list: arcade.SpriteList | None = None
@@ -58,10 +74,8 @@ class Level(arcade.View):
         self.world_width: int | None = None
         self.world_height: int | None = None
 
-        # Сложность
-        self.difficulty: float = LEVELS[level_name]["difficulty"]
-        # Путь для врагов
-        self.enemies_way: list | None = None
+        # Волны
+        self.waves: waves.Waves | None = None
 
         # Игровые объекты
         self.enemies_list: arcade.SpriteList | None = None
@@ -77,6 +91,7 @@ class Level(arcade.View):
         self.screen_width, self.screen_height = self.width, self.height
 
         # Создание карты
+        self.tilemap = arcade.load_tilemap(LEVELS[self.level_name]["tilemap"], scaling=TILEMAP_SCALING)
         self.background_list = self.tilemap.sprite_lists["background"]
         self.enemy_base_list = self.tilemap.sprite_lists["enemy_base"]
         self.player_base_list = self.tilemap.sprite_lists["player_base"]
@@ -85,16 +100,23 @@ class Level(arcade.View):
         # Получение размеров карты
         self.world_width, self.world_height = self.tilemap.width * TILE_SIZE, self.tilemap.height * TILE_SIZE
 
-        # Нахождение пути для противников
-        self.find_enemies_way()
         # Создание противников
         self.enemies_list = arcade.SpriteList()
+        # Создание волн
+        self.waves = waves.Waves(
+            LEVELS[self.level_name]["waves"],
+            LEVELS[self.level_name]["wave_rate"],
+            self.enemies_list,
+            self.enemy_base_list[0].position,
+            self.find_enemies_way(),
+            LEVELS[self.level_name]["difficulty"]
+        )
 
         # Создание камер
         self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.world_width * 0.5, self.world_height * 0.5
 
-        # Обнуляем клавиши
+        # Обнуление клавиш
         self.keys_pressed = set()
 
     def on_draw(self) -> None:
@@ -115,6 +137,11 @@ class Level(arcade.View):
         # Движение камеры
         self.world_camera_move(delta_time)
 
+        # Обновление волны
+        if not self.waves.running and arcade.key.SPACE in self.keys_pressed:
+            self.waves.running = True
+        self.waves.update(delta_time)
+
         # Движение врагов
         self.enemies_list.update()
         self.enemies_list.update_animation()
@@ -133,6 +160,7 @@ class Level(arcade.View):
         self.world_camera.match_window()
         self.check_camera_borders(self.world_camera)
 
+    # Методы для камер
     def check_camera_borders(self, camera: arcade.Camera2D) -> None:
         """Проверка камеры на выход за границы экрана"""
 
@@ -161,45 +189,30 @@ class Level(arcade.View):
         # Проверка на выход за границы
         self.check_camera_borders(self.world_camera)
 
-    def find_enemies_way(self):
+    # Методы для противников
+    def find_enemies_way(self) -> list:
         """Нахождение пути для врагов"""
 
         # Подготовка данных для алгоритма
-        # Размеры поля
-        rows: int
-        cols: int
-        # Координаты базы врага
-        start_row: int
-        start_col: int
-        # Координаты базы игрока
-        end_row: int
-        end_col: int
-        # Список дорог
-        road_grid: list[list[int]]
-
-        # Пересоздание списка
-        self.enemies_way = []
+        enemies_way = []
         # Размер поля
-        rows, cols = self.tilemap.height, self.tilemap.width
-        # Нахождение базы врагов
-        enemy_base_grid = self.tilemap.get_tilemap_layer("enemy_base").data
-        start_row, start_col = [
-            (row, col) for row in range(rows) for col in range(cols) if enemy_base_grid[row][col] != 0
-        ][0]
-        # Нахождение базы игрока
-        player_base_grid = self.tilemap.get_tilemap_layer("player_base").data
-        end_row, end_col = [
-            (row, col) for row in range(rows) for col in range(cols) if player_base_grid[row][col] != 0
-        ][0]
-        # Получение поля с дорогами
-        road_grid = self.tilemap.get_tilemap_layer("road").data
+        rows: int = self.tilemap.height
+        cols: int = self.tilemap.width
+        # Координаты базы врагов
+        start_row: int = int(self.enemy_base_list[0].center_y // TILE_SIZE)
+        start_col: int = int(self.enemy_base_list[0].center_x // TILE_SIZE)
+        # Координаты базы игрока
+        end_row: int = int(self.player_base_list[0].center_y // TILE_SIZE)
+        end_col: int = int(self.player_base_list[0].center_x // TILE_SIZE)
+        # Поле с дорогами
+        road_grid: list = self.tilemap.get_tilemap_layer("road").data
 
         # Алгоритм поиска пути
-        parent: tuple[int, int] | None = None  # Предыдущая клетка
+        parent: tuple | None = None  # Предыдущая клетка
         row, col = start_row, start_col  # Текущая клетка
         while True:
             # Добавление клетки в путь
-            self.enemies_way.append(((col + 0.5) * TILE_SIZE, (rows - row - 0.5) * TILE_SIZE))
+            enemies_way.append(((col + 0.5) * TILE_SIZE, (rows - row - 0.5) * TILE_SIZE))
 
             # Останавливает алгоритм, если нашёл базу игрока
             if (row, col) == (end_row, end_col):
@@ -214,3 +227,5 @@ class Level(arcade.View):
                         parent = row, col
                         row, col = nh_row, nh_col
                         break
+
+        return enemies_way

@@ -65,8 +65,7 @@ class Enemy(arcade.Sprite):
              (self.way[self.curr_part][0] >= self.center_x and self.direction_x != 1)) and
                 ((self.way[self.curr_part][1] <= self.center_y and self.direction_y != -1) or
                  (self.way[self.curr_part][1] >= self.center_y and self.direction_y != 1))):
-            # Закрепление врага на конец прошлого отрезка пути
-            self.center_x, self.center_y = self.way[self.curr_part]
+            old_part = self.curr_part
 
             # Переход на другой отрезок
             self.curr_part += 1
@@ -76,17 +75,17 @@ class Enemy(arcade.Sprite):
                 return
 
             # Определение нового направления
-            if self.center_x == self.way[self.curr_part][0]:
+            if self.way[old_part][0] == self.way[self.curr_part][0]:
                 self.direction_x = 0
-            elif self.center_x < self.way[self.curr_part][0]:
+            elif self.way[old_part][0] < self.way[self.curr_part][0]:
                 self.direction_x = 1
-            elif self.center_x > self.way[self.curr_part][0]:
+            elif self.way[old_part][0] > self.way[self.curr_part][0]:
                 self.direction_x = -1
-            if self.center_y == self.way[self.curr_part][1]:
+            if self.way[old_part][1] == self.way[self.curr_part][1]:
                 self.direction_y = 0
-            elif self.center_y < self.way[self.curr_part][1]:
+            elif self.way[old_part][1] < self.way[self.curr_part][1]:
                 self.direction_y = 1
-            elif self.center_y > self.way[self.curr_part][1]:
+            elif self.way[old_part][1] > self.way[self.curr_part][1]:
                 self.direction_y = -1
 
             # Определение угла
