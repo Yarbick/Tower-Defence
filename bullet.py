@@ -24,7 +24,7 @@ class Bullet(arcade.Sprite):
         self.move(delta_time)
         self.hit()
         # Удаление пули, если цель уничтожена
-        if not self.target.sprite_lists:
+        if self.target.is_dead:
             self.remove_from_sprite_lists()
 
     def move(self, delta_time: float) -> None:
@@ -45,5 +45,36 @@ class Bullet(arcade.Sprite):
         if arcade.check_for_collision(self, self.target):
             # Нанесение урона
             self.target.get_damage(self.damage)
+            # Удаление пули
+            self.remove_from_sprite_lists()
+
+
+class ExplosiveBullet(Bullet):
+    """Разрывная пуля"""
+
+    def __init__(self, center_x: float | int, center_y: float | int, angle: float | int, texture: arcade.Texture,
+                 speed: int, damage: int, target: enemy.Enemy):
+        super().__init__(center_x, center_y, angle, texture, speed, damage, target)
+
+        # Область взрыва
+        self.explosive_radius: int = 3
+        self.explosive_range: arcade.Sprite = arcade.Sprite(
+            "resources/assets/images/towers/attack_range.png",
+            scale=self.explosive_radius * BULLET_SCALE
+        )
+
+    def hit(self):
+        """Нанесение урона врагу"""
+
+        # Проверка на попадание
+        if arcade.check_for_collision(self, self.target):
+            # Перенос области взрыва
+            self.explosive_range.position = self.position
+
+            # Нанесение урона врагам, которые попали в область взрыва
+            targets = arcade.check_for_collision_with_list(self.explosive_range, self.target.sprite_lists[0])
+            for target in targets:
+                target.get_damage(self.damage)
+
             # Удаление пули
             self.remove_from_sprite_lists()
