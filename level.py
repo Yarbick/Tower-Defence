@@ -82,6 +82,7 @@ class Level(arcade.View):
 
         # Игровые объекты
         self.enemies_list: arcade.SpriteList | None = None
+        self.bullets_list: arcade.SpriteList | None = None
         self.towers_list: arcade.SpriteList | None = None
 
         # Камеры
@@ -130,9 +131,12 @@ class Level(arcade.View):
             LEVELS[self.level_name]["difficulty"]
         )
 
+        # Создание пуль
+        self.bullets_list = arcade.SpriteList()
+
         # Создание башен
         self.towers_list = arcade.SpriteList()
-        twr = tower.BasicTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list)
+        twr = tower.BasicTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list, self.bullets_list)
         self.towers_list.append(twr.base)
         self.towers_list.append(twr)
 
@@ -185,6 +189,7 @@ class Level(arcade.View):
         self.platforms_list.draw(pixelated=True)
         # Отрисовка игровых объектов
         self.enemies_list.draw(pixelated=True)
+        self.bullets_list.draw(pixelated=True)
         self.towers_list.draw(pixelated=True)
 
         # Отрисовка интерфейса
@@ -210,6 +215,9 @@ class Level(arcade.View):
         # Движение врагов
         self.enemies_list.update()
         self.enemies_list.update_animation()
+
+        # Обновление пуль
+        self.bullets_list.update()
 
         # Обновление башен
         self.towers_list.update()
@@ -277,7 +285,7 @@ class Level(arcade.View):
         """Нахождение пути для врагов"""
 
         # Подготовка данных для алгоритма
-        enemies_way = []
+        enemies_way: list = []
         # Размер поля
         rows: int = self.tilemap.height
         cols: int = self.tilemap.width

@@ -80,7 +80,7 @@ class Enemy(arcade.Sprite):
         self.center_y += change_y
         self.way_traveled += abs(change_x) + abs(change_y)
 
-    def get_damage(self, damage):
+    def get_damage(self, damage) -> None:
         """Получение урона"""
 
         # Определение и получение урона
@@ -103,6 +103,8 @@ class Enemy(arcade.Sprite):
 
 
 class BasicEnemy(Enemy):
+    """Базовый враг"""
+
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
@@ -142,6 +144,8 @@ class BasicEnemy(Enemy):
 
 
 class FastEnemy(Enemy):
+    """Быстрый враг"""
+
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
@@ -181,6 +185,8 @@ class FastEnemy(Enemy):
 
 
 class BigEnemy(Enemy):
+    """Большой враг"""
+
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
@@ -220,6 +226,8 @@ class BigEnemy(Enemy):
 
 
 class PushEnemy(Enemy):
+    """Враг-пушер"""
+
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
