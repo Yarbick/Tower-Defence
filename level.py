@@ -22,31 +22,97 @@ LEVELS = {
             (enemy.BasicEnemy for _ in range(25)),
             (enemy.BasicEnemy for _ in range(30))
         ),
-        "wave_rate": 10.0,
+        "wave_rate": 15.0,
         "difficulty": 1.0
     },
     "2": {
         "tilemap": "resources/levels/level2.tmx",
-        "waves": None,
-        "wave_rate": 15.0,
+        "waves": (
+            (enemy.BasicEnemy for _ in range(5)),
+            (enemy.FastEnemy for _ in range(5)),
+            (enemy.BasicEnemy for _ in range(8)),
+            (enemy.FastEnemy for _ in range(8)),
+            ([enemy.BasicEnemy for _ in range(10)] + [enemy.FastEnemy for _ in range(10)]),
+            ([enemy.BasicEnemy for _ in range(15)] + [enemy.FastEnemy for _ in range(15)]),
+            (enemy.BasicEnemy for _ in range(25)),
+            (enemy.FastEnemy for _ in range(25)),
+            ([enemy.BasicEnemy for _ in range(20)] + [enemy.FastEnemy for _ in range(20)]),
+            ([enemy.BasicEnemy for _ in range(25)] + [enemy.FastEnemy for _ in range(25)]),
+            (enemy.BasicEnemy for _ in range(30)),
+            (enemy.FastEnemy for _ in range(30)),
+            (enemy.BasicEnemy for _ in range(40)),
+            (enemy.FastEnemy for _ in range(40)),
+            (enemy.BasicEnemy for _ in range(40)),
+            (enemy.FastEnemy for _ in range(40)),
+            ([enemy.BasicEnemy for _ in range(40)] + [enemy.FastEnemy for _ in range(40)]),
+        ),
+        "wave_rate": 20.0,
         "difficulty": 1.1
     },
     "3": {
         "tilemap": "resources/levels/level3.tmx",
-        "waves": None,
-        "wave_rate": 15.0,
+        "waves": (
+            (enemy.BasicEnemy for _ in range(5)),
+            (enemy.BasicEnemy for _ in range(8)),
+            (enemy.FastEnemy for _ in range(8)),
+            (enemy.BigEnemy for _ in range(4)),
+            (enemy.BigEnemy for _ in range(6)),
+            (enemy.BigEnemy for _ in range(8)),
+            ([enemy.BasicEnemy for _ in range(6)] + [enemy.FastEnemy for _ in range(6)]),
+            ([enemy.BasicEnemy for _ in range(6)] + [enemy.BigEnemy for _ in range(6)]),
+            (enemy.BasicEnemy for _ in range(15)),
+            (enemy.BasicEnemy for _ in range(20)),
+            (enemy.FastEnemy for _ in range(20)),
+            (enemy.BigEnemy for _ in range(10)),
+            (enemy.BigEnemy for _ in range(15)),
+            (enemy.BigEnemy for _ in range(20)),
+            ([enemy.BasicEnemy for _ in range(15)] + [enemy.FastEnemy for _ in range(15)]),
+            ([enemy.BasicEnemy for _ in range(20)] + [enemy.BigEnemy for _ in range(10)]),
+            (enemy.BigEnemy for _ in range(15)),
+            ([enemy.BasicEnemy for _ in range(20)] + [enemy.BigEnemy for _ in range(15)]),
+            ([enemy.BasicEnemy for _ in range(20)] + [enemy.BigEnemy for _ in range(20)]),
+            ([enemy.BasicEnemy for _ in range(20)] + [enemy.FastEnemy for _ in range(20)] +
+             [enemy.BigEnemy for _ in range(20)]),
+            ([enemy.BasicEnemy for _ in range(30)] + [enemy.FastEnemy for _ in range(30)] +
+             [enemy.BigEnemy for _ in range(30)])
+        ),
+        "wave_rate": 25.0,
         "difficulty": 1.2
     },
     "4": {
         "tilemap": "resources/levels/level4.tmx",
-        "waves": None,
-        "wave_rate": 20.0,
+        "waves": (
+            (enemy.BasicEnemy for _ in range(6)),
+            (enemy.FastEnemy for _ in range(6)),
+            (enemy.BigEnemy for _ in range(4)),
+            (enemy.PushEnemy for _ in range(3)),
+            (enemy.BasicEnemy for _ in range(12)),
+            (enemy.FastEnemy for _ in range(12)),
+            ([enemy.BasicEnemy for _ in range(8)] + [enemy.FastEnemy for _ in range(8)]),
+            ([enemy.BasicEnemy for _ in range(10)] + [enemy.BigEnemy for _ in range(4)]),
+            (enemy.BigEnemy for _ in range(6)),
+            (enemy.PushEnemy for _ in range(6)),
+            (enemy.FastEnemy for _ in range(20)),
+            (enemy.BigEnemy for _ in range(10)),
+            (enemy.PushEnemy for _ in range(10)),
+            (enemy.BasicEnemy for _ in range(20)),
+            ([enemy.PushEnemy for _ in range(8)] + [enemy.FastEnemy for _ in range(16)]),
+            ([enemy.PushEnemy for _ in range(8)] + [enemy.BigEnemy for _ in range(8)]),
+            (enemy.BasicEnemy for _ in range(30)),
+            ([enemy.BasicEnemy for _ in range(15)] + [enemy.PushEnemy for _ in range(10)]),
+            ([enemy.PushEnemy for _ in range(10)] + [enemy.FastEnemy for _ in range(15)]),
+            ([enemy.PushEnemy for _ in range(12)] + [enemy.FastEnemy for _ in range(12)] +
+             [enemy.PushEnemy for _ in range(20)]),
+            ([enemy.BasicEnemy for _ in range(25)] + [enemy.BigEnemy for _ in range(20)] +
+             [enemy.PushEnemy for _ in range(30)])
+        ),
+        "wave_rate": 30.0,
         "difficulty": 1.3
     },
     "5": {
         "tilemap": "resources/levels/level5.tmx",
         "waves": None,
-        "wave_rate": 20.0,
+        "wave_rate": 35.0,
         "difficulty": 1.5
     }
 }
@@ -136,7 +202,7 @@ class Level(arcade.View):
 
         # Создание башен
         self.towers_list = arcade.SpriteList()
-        twr = tower.BasicTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list, self.bullets_list)
+        twr = tower.ExplosiveTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list, self.bullets_list)
         self.towers_list.append(twr.base)
         self.towers_list.append(twr)
 
@@ -290,10 +356,10 @@ class Level(arcade.View):
         rows: int = self.tilemap.height
         cols: int = self.tilemap.width
         # Координаты базы врагов
-        start_row: int = int(self.enemy_base_list[0].center_y // TILE_SIZE)
+        start_row: int = int(rows - 1 - self.enemy_base_list[0].center_y // TILE_SIZE)
         start_col: int = int(self.enemy_base_list[0].center_x // TILE_SIZE)
         # Координаты базы игрока
-        end_row: int = int(self.player_base_list[0].center_y // TILE_SIZE)
+        end_row: int = int(rows - 1 - self.player_base_list[0].center_y // TILE_SIZE)
         end_col: int = int(self.player_base_list[0].center_x // TILE_SIZE)
         # Поле с дорогами
         road_grid: list = self.tilemap.get_tilemap_layer("road").data

@@ -119,7 +119,7 @@ class BasicEnemy(Enemy):
 
         # Показатели врага
         self.health: int = 100 * difficulty
-        self.armor: int = 0.2 + (difficulty - 1) / 2
+        self.armor: int = 0.1
         self.speed: int = 200
         self.damage: int = 1
 
@@ -201,8 +201,8 @@ class BigEnemy(Enemy):
 
         # Показатели врага
         self.health: int = 250 * difficulty
-        self.armor: int = 0.4 + (difficulty - 1) / 2
-        self.speed: int = 125
+        self.armor: int = 0.4
+        self.speed: int = 150
         self.damage: int = 2
 
         # Направление движения
@@ -242,7 +242,7 @@ class PushEnemy(Enemy):
 
         # Показатели врага
         self.health: int = 225 * difficulty
-        self.armor: int = 0.3 + (difficulty - 1) / 2
+        self.armor: int = 0.25
         self.speed: int = 275
         self.damage: int = 2
 

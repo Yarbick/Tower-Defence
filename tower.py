@@ -85,7 +85,7 @@ class BasicTower(Tower):
         self.damage: int | float = 80
         self.fire_rate: int | float = 1 / 2
         self.radius: int | float = 5
-        self.bullet_speed: int | float = 500
+        self.bullet_speed: int | float = 750
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1
@@ -138,7 +138,7 @@ class ExplosiveTower(Tower):
         self.damage: int | float = 50
         self.fire_rate: int | float = 1 / 2
         self.radius: int | float = 4
-        self.bullet_speed: int | float = 250
+        self.bullet_speed: int | float = 600
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1

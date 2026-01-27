@@ -23,7 +23,7 @@ class Waves:
         # Атрибуты времени
         self.wave_rate = wave_rate  # Скорость появления волн
         self.wave_timer = wave_rate  # Время с появления последней волны
-        self.spawn_rate = 0.2  # Скорость появления врагов
+        self.spawn_rate = 0.25  # Скорость появления врагов
         self.spawn_timer = 0.0  # Время с появления последнего врага
         self.skip_rate = 4.0  # Лимит с вызова волны для вызова новой
 
