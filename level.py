@@ -2,9 +2,11 @@ import arcade
 from pyglet.graphics import Batch
 
 import controls
+import tower
 import enemy
 import waves
 
+# Константы
 TILE_SIZE = 64
 TILEMAP_SCALING = 2.0
 LEVELS = {
@@ -80,6 +82,7 @@ class Level(arcade.View):
 
         # Игровые объекты
         self.enemies_list: arcade.SpriteList | None = None
+        self.towers_list: arcade.SpriteList | None = None
 
         # Камеры
         self.world_camera: arcade.Camera2D | None = None
@@ -127,6 +130,12 @@ class Level(arcade.View):
             LEVELS[self.level_name]["difficulty"]
         )
 
+        # Создание башен
+        self.towers_list = arcade.SpriteList()
+        twr = tower.BasicTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list)
+        self.towers_list.append(twr.base)
+        self.towers_list.append(twr)
+
         # Создание камер
         self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.world_width * 0.5, self.world_height * 0.5
@@ -169,13 +178,14 @@ class Level(arcade.View):
         # Отрисовка игрового мира
         self.world_camera.use()
         # Отрисовка карты
-        self.background_list.draw()
-        self.enemy_base_list.draw()
-        self.player_base_list.draw()
-        self.road_list.draw()
-        self.platforms_list.draw()
+        self.background_list.draw(pixelated=True)
+        self.enemy_base_list.draw(pixelated=True)
+        self.player_base_list.draw(pixelated=True)
+        self.road_list.draw(pixelated=True)
+        self.platforms_list.draw(pixelated=True)
         # Отрисовка игровых объектов
-        self.enemies_list.draw()
+        self.enemies_list.draw(pixelated=True)
+        self.towers_list.draw(pixelated=True)
 
         # Отрисовка интерфейса
         self.gui_camera.use()
@@ -200,6 +210,9 @@ class Level(arcade.View):
         # Движение врагов
         self.enemies_list.update()
         self.enemies_list.update_animation()
+
+        # Обновление башен
+        self.towers_list.update()
 
         # Обновление интерфейса
         # Текст

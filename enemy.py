@@ -5,35 +5,7 @@ DEAD_ANIMATION_SPEED = 1 / 30
 
 
 class Enemy(arcade.Sprite):
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
-        super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
-
-        # Загрузка текстур
-        self.idle_texture: arcade.Texture | None = None
-        self.dead_animation_textures: tuple[arcade.Texture] | None = None
-
-        # Показатели врага
-        self.health: int | None = None
-        self.armor: int | None = None
-        self.speed: int | None = None
-        self.damage: int | None = None
-
-        # Направление движения
-        self.direction_x: int | None = None
-        self.direction_y: int | None = None
-
-        # Путь к базе игрока
-        self.way: tuple = way
-        self.curr_part: int = 0
-
-        # Флаги
-        self.is_dead = False
-
-        # Анимации
-        # Анимация смерти
-        self.dead_animation_running: bool = False
-        self.dead_animation_frame: int = 0
-        self.dead_animation_duration: float = 0.0
+    """Основные методы врагов"""
 
     def update(self, delta_time: float = 1 / 60) -> None:
         # Проверка на смерть
@@ -103,8 +75,10 @@ class Enemy(arcade.Sprite):
                 self.angle = 180
 
         # Обновление позиции
-        self.center_x += self.speed * self.direction_x * delta_time
-        self.center_y += self.speed * self.direction_y * delta_time
+        change_x, change_y = self.speed * self.direction_x * delta_time, self.speed * self.direction_y * delta_time
+        self.center_x += change_x
+        self.center_y += change_y
+        self.way_traveled += abs(change_x) + abs(change_y)
 
     def get_damage(self, damage):
         """Получение урона"""
@@ -130,7 +104,7 @@ class Enemy(arcade.Sprite):
 
 class BasicEnemy(Enemy):
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+        super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/basic_enemy/idle.png")
@@ -148,12 +122,14 @@ class BasicEnemy(Enemy):
         self.damage: int = 1
 
         # Направление движения
-        self.direction_x: int | None = None
-        self.direction_y: int | None = None
+        self.direction_x: int = 0
+        self.direction_y: int = 0
 
         # Путь к базе игрока
         self.way: tuple = way
         self.curr_part: int = 0
+        # Пройденное расстояние
+        self.way_traveled: float = 0
 
         # Флаги
         self.is_dead = False
@@ -167,7 +143,7 @@ class BasicEnemy(Enemy):
 
 class FastEnemy(Enemy):
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+        super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/fast_enemy/idle.png")
@@ -185,12 +161,14 @@ class FastEnemy(Enemy):
         self.damage: int = 1
 
         # Направление движения
-        self.direction_x: int | None = None
-        self.direction_y: int | None = None
+        self.direction_x: int = 0
+        self.direction_y: int = 0
 
         # Путь к базе игрока
         self.way: tuple = way
         self.curr_part: int = 0
+        # Пройденное расстояние
+        self.way_traveled: float = 0
 
         # Флаги
         self.is_dead = False
@@ -204,7 +182,7 @@ class FastEnemy(Enemy):
 
 class BigEnemy(Enemy):
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+        super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/big_enemy/idle.png")
@@ -222,12 +200,14 @@ class BigEnemy(Enemy):
         self.damage: int = 2
 
         # Направление движения
-        self.direction_x: int | None = None
-        self.direction_y: int | None = None
+        self.direction_x: int = 0
+        self.direction_y: int = 0
 
         # Путь к базе игрока
         self.way: tuple = way
         self.curr_part: int = 0
+        # Пройденное расстояние
+        self.way_traveled: float = 0
 
         # Флаги
         self.is_dead = False
@@ -241,7 +221,7 @@ class BigEnemy(Enemy):
 
 class PushEnemy(Enemy):
     def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty)
+        super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/push_enemy/idle.png")
@@ -259,12 +239,14 @@ class PushEnemy(Enemy):
         self.damage: int = 2
 
         # Направление движения
-        self.direction_x: int | None = None
-        self.direction_y: int | None = None
+        self.direction_x: int = 0
+        self.direction_y: int = 0
 
         # Путь к базе игрока
         self.way: tuple = way
         self.curr_part: int = 0
+        # Пройденное расстояние
+        self.way_traveled: float = 0
 
         # Флаги
         self.is_dead = False

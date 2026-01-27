@@ -105,13 +105,13 @@ class MainMenu(arcade.View):
 
         # Отрисовка игрового мира
         self.world_camera.use()
-        self.background_list.draw()
+        self.background_list.draw(pixelated=True)
 
         # Отрисовка интерфейса
         self.gui_camera.use()
         arcade.draw_texture_rect(
             self.logo_texture,
-            arcade.Rect(0, 0, 0, 0, 620, 64, self.screen_width * 0.5, self.screen_height * 0.7)
+            arcade.Rect(0, 0, 0, 0, 620, 64, self.screen_width * 0.5, self.screen_height * 0.7), pixelated=True
         )
         self.ui_manager.draw()
 
