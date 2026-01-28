@@ -1,4 +1,5 @@
 import arcade
+import arcade.gui
 from pyglet.graphics import Batch
 
 import controls
@@ -120,6 +121,39 @@ CAMERA_SPEED = 300
 CAMERA_SPEED_BOOST = 2.0
 
 
+class AddTowerButton(arcade.gui.UITextureButton):
+    """Кнопка создания башни"""
+
+    def __init__(self, adding_tower: tower.Tower(), *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.adding_tower: tower.Tower() = adding_tower
+
+    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+        # Получение родителей
+        layout: arcade.gui.UIBoxLayout = self.parent
+        ui_manager: arcade.gui.UIManager = layout.parent
+        view: arcade.View = ui_manager.window.current_view
+
+        # Создание новой башни
+        new_tower: tower.Tower = self.adding_tower(
+            ((view.world_camera.position[0] - view.screen_width / 2 + layout.center_x) // TILE_SIZE + 0.5) * TILE_SIZE,
+            ((view.world_camera.position[1] - view.screen_height / 2 + layout.center_y) // TILE_SIZE - 0.5) * TILE_SIZE,
+            view
+        )
+        # Проверка на достаточное количество денег
+        if view.player_money >= new_tower.price:
+            # Вычитание денег у игрока
+            view.player_money -= new_tower.price
+
+            # Добавление башни
+            view.towers_list.append(new_tower.base)
+            view.towers_list.append(new_tower)
+
+            # Закрытие меню создания башни
+            layout.visible = False
+            ui_manager.disable()
+
+
 class Level(arcade.View):
     """Уровень"""
 
@@ -202,9 +236,6 @@ class Level(arcade.View):
 
         # Создание башен
         self.towers_list = arcade.SpriteList()
-        twr = tower.BasicTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list, self.bullets_list)
-        self.towers_list.append(twr.base)
-        self.towers_list.append(twr)
 
         # Создание камер
         self.world_camera = arcade.camera.Camera2D()
@@ -244,7 +275,38 @@ class Level(arcade.View):
             470, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
-
+        # Виджеты
+        self.ui_manager = arcade.gui.UIManager()
+        self.ui_manager._pixelated = True
+        self.ui_manager.enable()
+        # Layout для кнопок создания башен
+        self.add_tower_layout = arcade.gui.UIBoxLayout(space_between=10, vertical=False)
+        self.add_tower_layout.visible = False
+        self.ui_manager.add(self.add_tower_layout)
+        # Кнопка создания базовой башни
+        self.add_basic_tower_button = AddTowerButton(
+            tower.BasicTower,
+            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/basic_tower/base.png")
+        )
+        self.add_tower_layout.add(self.add_basic_tower_button)
+        # Кнопка создания взрывной башни
+        self.add_explosive_tower_button = AddTowerButton(
+            tower.ExplosiveTower,
+            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/explosive_tower/base.png")
+        )
+        self.add_tower_layout.add(self.add_explosive_tower_button)
+        # Кнопка создания снайперской башни
+        self.add_sniper_tower_button = AddTowerButton(
+            tower.SniperTower,
+            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/sniper_tower/base.png")
+        )
+        self.add_tower_layout.add(self.add_sniper_tower_button)
+        # Кнопка создания башни-минигана
+        self.add_minigun_tower_button = AddTowerButton(
+            tower.MinigunTower,
+            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/minigun_tower/base.png")
+        )
+        self.add_tower_layout.add(self.add_minigun_tower_button)
         # Обнуление клавиш
         self.keys_pressed = set()
 
@@ -268,6 +330,8 @@ class Level(arcade.View):
         self.gui_camera.use()
         # Отрисовка текста
         self.batch.draw()
+        # Отрисовка виджетов
+        self.ui_manager.draw()
 
     def on_update(self, delta_time: float) -> None:
         if self.game_status is not None:
@@ -301,6 +365,11 @@ class Level(arcade.View):
         self.wave_number_text.text = f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}"
         self.time_left_text.text = f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}"
         self.skip_text.batch = self.batch if self.waves.wave_timer >= self.waves.skip_rate else None
+
+    def on_mouse_press(self, x: int, y: int, key: int, modifiers: int) -> None:
+        # Изменение башен
+        if key == arcade.MOUSE_BUTTON_LEFT:
+            self.edit_tower(x, y)
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         self.keys_pressed.add(key)
@@ -393,3 +462,28 @@ class Level(arcade.View):
                         break
 
         return enemies_way
+
+    # Методы взаимодействия с картой
+    def edit_tower(self, x: int, y: int) -> None:
+        """Создание и изменение башен"""
+
+        # Нахождение координат клика относительно тайлов игрового мира
+        world_x: float = ((self.world_camera.position[0] - self.screen_width * 0.5 + x) // TILE_SIZE + 0.5) * TILE_SIZE
+        world_y: float = ((self.world_camera.position[1] - self.screen_height * 0.5 + y) // TILE_SIZE + 0.5) * TILE_SIZE
+
+        # Проверка на клик по платформе
+        if arcade.get_sprites_at_point((world_x, world_y), self.platforms_list):
+            self.ui_manager.enable()
+            # Проверка на нахождение башни на платформе
+            if arcade.get_sprites_at_point((world_x, world_y), self.towers_list):
+                pass
+            else:
+                # Открываем меню создания новой башни
+                self.add_tower_layout.visible = True
+                # Переносим меню к месту текущего клика
+                self.add_tower_layout.center_x = x
+                self.add_tower_layout.center_y = y + TILE_SIZE
+        else:
+            # Закрываем меню
+            self.ui_manager.disable()
+            self.add_tower_layout.visible = False
