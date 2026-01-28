@@ -156,7 +156,8 @@ class Level(arcade.View):
         self.gui_camera: arcade.Camera2D | None = None
 
         # Атрибуты для логики игры
-        self.health: int | None = None
+        self.player_health: int | None = None
+        self.player_money: int | None = None
         self.game_status: bool | None = None  # None - игра не закончена, False - поражение, True - победа
 
         # Атрибуты интерфейса
@@ -186,15 +187,14 @@ class Level(arcade.View):
 
         # Создание противников
         self.enemies_list = arcade.SpriteList()
-        self.enemies_list.parent = self  # Создаём ссылку на родителя для получения урона по базе
+
         # Создание волн
         self.waves = waves.Waves(
             LEVELS[self.level_name]["waves"],
             LEVELS[self.level_name]["wave_rate"],
-            self.enemies_list,
-            self.enemy_base_list[0].position,
             self.find_enemies_way(),
-            LEVELS[self.level_name]["difficulty"]
+            LEVELS[self.level_name]["difficulty"],
+            self
         )
 
         # Создание пуль
@@ -202,7 +202,7 @@ class Level(arcade.View):
 
         # Создание башен
         self.towers_list = arcade.SpriteList()
-        twr = tower.ExplosiveTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list, self.bullets_list)
+        twr = tower.BasicTower(11.5 * TILE_SIZE, 12.5 * TILE_SIZE, self.enemies_list, self.bullets_list)
         self.towers_list.append(twr.base)
         self.towers_list.append(twr)
 
@@ -212,15 +212,21 @@ class Level(arcade.View):
         self.gui_camera = arcade.camera.Camera2D()
 
         # Обновление атрибутов логики игры до значений по умолчанию
-        self.health = 20
+        self.player_health = 20
+        self.player_money = 200
         self.game_status = None
 
         # Создание интерфейса
         # Текст
         self.batch = Batch()
         self.health_text = arcade.Text(
-            f"Health: {max(0, self.health)}",
+            f"Health: {max(0, self.player_health)}",
             20, self.screen_height - 20, arcade.color.WHITE,
+            font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
+        )
+        self.money_text = arcade.Text(
+            f"Money: {max(0, self.player_health)}",
+            260, self.screen_height - 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
         )
         self.wave_number_text = arcade.Text(
@@ -230,12 +236,12 @@ class Level(arcade.View):
         )
         self.time_left_text = arcade.Text(
             f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}",
-            180, 20, arcade.color.WHITE,
+            200, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
         self.skip_text = arcade.Text(
             f"SKIP",
-            450, 20, arcade.color.WHITE,
+            470, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
 
@@ -290,7 +296,8 @@ class Level(arcade.View):
 
         # Обновление интерфейса
         # Текст
-        self.health_text.text = f"Health: {max(0, self.health)}"
+        self.health_text.text = f"Health: {max(0, self.player_health)}"
+        self.money_text.text = f"Money: {self.player_money}"
         self.wave_number_text.text = f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}"
         self.time_left_text.text = f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}"
         self.skip_text.batch = self.batch if self.waves.wave_timer >= self.waves.skip_rate else None

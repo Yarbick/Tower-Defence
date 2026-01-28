@@ -4,19 +4,20 @@ import arcade
 class Waves:
     def __init__(self, waves: tuple,
                  wave_rate: float,
-                 enemies_list: arcade.SpriteList,
-                 enemy_base_position: tuple,
                  enemy_way: list,
-                 difficulty: float):
+                 difficulty: float,
+                 scene):
+        # Привязка к уровню
+        self.scene = scene
+
         # Список волн
         self.waves: list = [list(wave) for wave in waves]
         # Очередь появления противников
         self.enemy_queue: list = []
 
         # Атрибуты для генерации врагов
-        self.enemies_list: arcade.SpriteList = enemies_list
-        self.enemy_start_x: int | float = enemy_base_position[0]
-        self.enemy_start_y: int | float = enemy_base_position[1]
+        self.enemy_start_x: int | float = self.scene.enemy_base_list[0].position[0]
+        self.enemy_start_y: int | float = self.scene.enemy_base_list[0].position[1]
         self.enemy_way: list = enemy_way
         self.difficulty: float = difficulty
 
@@ -71,8 +72,10 @@ class Waves:
 
         if self.spawn_timer >= self.spawn_rate:
             # Создание противника
-            self.enemies_list.append(
-                self.enemy_queue.pop()(self.enemy_start_x, self.enemy_start_y, self.enemy_way, self.difficulty)
+            self.scene.enemies_list.append(
+                self.enemy_queue.pop()(
+                    self.enemy_start_x, self.enemy_start_y, self.enemy_way, self.difficulty, self.scene
+                )
             )
 
             # Сброс таймера

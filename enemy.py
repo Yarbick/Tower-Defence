@@ -45,7 +45,10 @@ class Enemy(arcade.Sprite):
             # Смерть при завершении пути
             if self.curr_part >= len(self.way):
                 # Нанесение урона базе
-                self.sprite_lists[0].parent.health -= self.damage
+                self.scene.player_health -= self.damage
+                # Вычитание стоимости врага от денег игрока
+                self.scene.player_money -= self.kill_reward
+
                 # Смерть
                 self.dead()
                 return
@@ -95,6 +98,9 @@ class Enemy(arcade.Sprite):
         # Переключение флага
         self.is_dead = True
 
+        # Начисление денег игроку
+        self.scene.player_money += self.kill_reward
+
         # Обновление и запуск анимации
         self.dead_animation_running = True
         self.dead_animation_duration = 0.0
@@ -105,8 +111,10 @@ class Enemy(arcade.Sprite):
 class BasicEnemy(Enemy):
     """Базовый враг"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, scene):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
+        # Привязка к уровню
+        self.scene = scene
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/basic_enemy/idle.png")
@@ -122,6 +130,7 @@ class BasicEnemy(Enemy):
         self.armor: int = 0.1
         self.speed: int = 200
         self.damage: int = 1
+        self.kill_reward: int = 20
 
         # Направление движения
         self.direction_x: int = 0
@@ -146,8 +155,10 @@ class BasicEnemy(Enemy):
 class FastEnemy(Enemy):
     """Быстрый враг"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, scene):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
+        # Привязка к уровню
+        self.scene = scene
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/fast_enemy/idle.png")
@@ -163,6 +174,7 @@ class FastEnemy(Enemy):
         self.armor: int = 0
         self.speed: int = 350
         self.damage: int = 1
+        self.kill_reward: int = 15
 
         # Направление движения
         self.direction_x: int = 0
@@ -187,8 +199,10 @@ class FastEnemy(Enemy):
 class BigEnemy(Enemy):
     """Большой враг"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, scene):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
+        # Привязка к уровню
+        self.scene = scene
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/big_enemy/idle.png")
@@ -204,6 +218,7 @@ class BigEnemy(Enemy):
         self.armor: int = 0.4
         self.speed: int = 150
         self.damage: int = 2
+        self.kill_reward: int = 30
 
         # Направление движения
         self.direction_x: int = 0
@@ -228,8 +243,10 @@ class BigEnemy(Enemy):
 class PushEnemy(Enemy):
     """Враг-пушер"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float):
+    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, scene):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
+        # Привязка к уровню
+        self.scene = scene
 
         # Загрузка текстур
         self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/push_enemy/idle.png")
@@ -245,6 +262,7 @@ class PushEnemy(Enemy):
         self.armor: int = 0.25
         self.speed: int = 275
         self.damage: int = 2
+        self.kill_reward: int = 40
 
         # Направление движения
         self.direction_x: int = 0

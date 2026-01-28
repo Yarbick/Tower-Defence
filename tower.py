@@ -83,9 +83,10 @@ class BasicTower(Tower):
 
         # Показатели башни
         self.damage: int | float = 80
-        self.fire_rate: int | float = 1 / 2
+        self.fire_rate: int | float = 1 / 3
         self.radius: int | float = 5
         self.bullet_speed: int | float = 750
+        self.price = 150
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1
@@ -139,6 +140,7 @@ class ExplosiveTower(Tower):
         self.fire_rate: int | float = 1 / 2
         self.radius: int | float = 4
         self.bullet_speed: int | float = 600
+        self.price = 200
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1
@@ -192,6 +194,7 @@ class SniperTower(Tower):
         self.fire_rate: int | float = 1 / 0.5
         self.radius: int | float = 12
         self.bullet_speed: int | float = 1500
+        self.price = 200
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1
@@ -245,6 +248,7 @@ class MinigunTower(Tower):
         self.fire_rate: int | float = 1 / 15
         self.radius: int | float = 8
         self.bullet_speed: int | float = 1000
+        self.price = 300
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1
