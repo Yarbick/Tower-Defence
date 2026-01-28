@@ -20,9 +20,9 @@ class BackButton(arcade.gui.UIFlatButton):
 
 class LevelButton(arcade.gui.UIFlatButton):
     """Кнопка переключения на уровень"""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, level_name: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.level_name: None = None
+        self.level_name: str = level_name
 
     def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
         # Переключение на уровень
@@ -73,6 +73,7 @@ class LevelsMenu(arcade.View):
         )
         # Создание виджетов
         self.ui_manager = arcade.gui.UIManager()
+        self.ui_manager._pixelated = True
         self.ui_manager.enable()
         # Общий стиль кнопок
         button_style = {
@@ -93,11 +94,11 @@ class LevelsMenu(arcade.View):
             vertical=True, space_between=10
         )
         # Добавление кнопок
-        for i in range(1, LEVELS_COUNT + 1):
+        for level_name in range(1, LEVELS_COUNT + 1):
             level_button = LevelButton(
-                width=self.screen_width - self.levels_layout.left * 2, text=f"Level {i}", style=button_style
+                str(level_name),
+                width=self.screen_width - self.levels_layout.left * 2, text=f"Level {level_name}", style=button_style
             )
-            level_button.level_name = str(i)
             self.levels_layout.add(level_button)
         self.ui_manager.add(self.levels_layout)
 

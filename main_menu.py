@@ -67,6 +67,7 @@ class MainMenu(arcade.View):
 
         # Создание виджетов
         self.ui_manager = arcade.gui.UIManager()
+        self.ui_manager._pixelated = True
         self.ui_manager.enable()
         # Общий стиль кнопок
         button_style = {

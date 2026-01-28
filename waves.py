@@ -2,13 +2,9 @@ import arcade
 
 
 class Waves:
-    def __init__(self, waves: tuple,
-                 wave_rate: float,
-                 enemy_way: list,
-                 difficulty: float,
-                 scene):
+    def __init__(self, waves: tuple, wave_rate: float, enemy_way: list, difficulty: float, view: arcade.View):
         # Привязка к уровню
-        self.scene = scene
+        self.view: arcade.View = view
 
         # Список волн
         self.waves: list = [list(wave) for wave in waves]
@@ -16,17 +12,17 @@ class Waves:
         self.enemy_queue: list = []
 
         # Атрибуты для генерации врагов
-        self.enemy_start_x: int | float = self.scene.enemy_base_list[0].position[0]
-        self.enemy_start_y: int | float = self.scene.enemy_base_list[0].position[1]
+        self.enemy_start_x: int | float = self.view.enemy_base_list[0].center_x
+        self.enemy_start_y: int | float = self.view.enemy_base_list[0].center_y
         self.enemy_way: list = enemy_way
         self.difficulty: float = difficulty
 
         # Атрибуты времени
-        self.wave_rate = wave_rate  # Скорость появления волн
-        self.wave_timer = wave_rate  # Время с появления последней волны
-        self.spawn_rate = 0.25  # Скорость появления врагов
-        self.spawn_timer = 0.0  # Время с появления последнего врага
-        self.skip_rate = 4.0  # Лимит с вызова волны для вызова новой
+        self.wave_rate: float = wave_rate  # Скорость появления волн
+        self.wave_timer: float = wave_rate  # Время с появления последней волны
+        self.spawn_rate: float = 0.25  # Скорость появления врагов
+        self.spawn_timer: float = 0.0  # Время с появления последнего врага
+        self.skip_rate: float = 4.0  # Лимит с вызова волны для вызова новой
 
         # Флаги
         self.running: bool = False  # Пора ли запускать волны
@@ -72,11 +68,11 @@ class Waves:
 
         if self.spawn_timer >= self.spawn_rate:
             # Создание противника
-            self.scene.enemies_list.append(
+            self.view.enemies_list.append(
                 self.enemy_queue.pop()(
-                    self.enemy_start_x, self.enemy_start_y, self.enemy_way, self.difficulty, self.scene
+                    self.enemy_start_x, self.enemy_start_y, self.enemy_way, self.difficulty, self.view
                 )
             )
 
             # Сброс таймера
-            self.spawn_timer = 0
+            self.spawn_timer = 0.0

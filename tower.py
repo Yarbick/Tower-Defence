@@ -8,7 +8,7 @@ TOWER_SCALING = 2.0
 
 
 class Tower(arcade.Sprite):
-    """Башня"""
+    """Макет башни"""
 
     def update(self, delta_time: float = 1 / 60) -> None:
         self.find_target()
@@ -26,7 +26,7 @@ class Tower(arcade.Sprite):
             self.curr_target = None
 
         # Поиск новой цели
-        targets = arcade.check_for_collision_with_list(self.attack_range, self.enemy_list)  # Цели в радиусе атаки башни
+        targets = arcade.check_for_collision_with_list(self.attack_range, self.view.enemies_list)  # Цели в радиусе атаки башни
         if self.curr_target is None and targets:
             # Выбор самой первой цели
             self.curr_target = max(
@@ -49,7 +49,7 @@ class Tower(arcade.Sprite):
         # Проверка на возможность выстрелить
         if self.curr_target and self.fire_timer >= self.fire_rate:
             # Создание пули
-            self.bullets_list.append(self.bullet(
+            self.view.bullets_list.append(self.bullet(
                 self.center_x, self.center_y, self.angle, self.bullet_texture,
                 self.bullet_speed, self.damage, self.curr_target
             ))
@@ -59,9 +59,10 @@ class Tower(arcade.Sprite):
 
 
 class BasicTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float,
-                 enemies_list: arcade.SpriteList, bullets_list: arcade.SpriteList):
+    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
         super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
+        # Привязка к уровню
+        self.view: arcade.View = view
 
         # Загрузка текстур
         self.base_texture: arcade.Texture = arcade.load_texture(
@@ -104,18 +105,15 @@ class BasicTower(Tower):
         # Пуля
         self.bullet = bullet.Bullet
 
-        # Ссылка на списки
-        self.enemy_list: arcade.SpriteList = enemies_list
-        self.bullets_list: arcade.SpriteList = bullets_list
-
         # Текущая цель
         self.curr_target: arcade.Sprite | None = None
 
 
 class ExplosiveTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float,
-                 enemies_list: arcade.SpriteList, bullets_list: arcade.SpriteList):
+    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
         super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
+        # Привязка к уровню
+        self.view: arcade.View = view
 
         # Загрузка текстур
         self.base_texture: arcade.Texture = arcade.load_texture(
@@ -158,18 +156,15 @@ class ExplosiveTower(Tower):
         # Пуля
         self.bullet = bullet.ExplosiveBullet
 
-        # Ссылка на списки
-        self.enemy_list: arcade.SpriteList = enemies_list
-        self.bullets_list: arcade.SpriteList = bullets_list
-
         # Текущая цель
         self.curr_target: arcade.Sprite | None = None
 
 
 class SniperTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float,
-                 enemies_list: arcade.SpriteList, bullets_list: arcade.SpriteList):
+    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
         super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
+        # Привязка к уровню
+        self.view: arcade.View = view
 
         # Загрузка текстур
         self.base_texture: arcade.Texture = arcade.load_texture(
@@ -212,18 +207,15 @@ class SniperTower(Tower):
         # Пуля
         self.bullet = bullet.Bullet
 
-        # Ссылка на списки
-        self.enemy_list: arcade.SpriteList = enemies_list
-        self.bullets_list: arcade.SpriteList = bullets_list
-
         # Текущая цель
         self.curr_target: arcade.Sprite | None = None
 
 
 class MinigunTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float,
-                 enemies_list: arcade.SpriteList, bullets_list: arcade.SpriteList):
+    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
         super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
+        # Привязка к уровню
+        self.view: arcade.View = view
 
         # Загрузка текстур
         self.base_texture: arcade.Texture = arcade.load_texture(
@@ -265,10 +257,6 @@ class MinigunTower(Tower):
 
         # Пуля
         self.bullet = bullet.Bullet
-
-        # Ссылка на списки
-        self.enemy_list: arcade.SpriteList = enemies_list
-        self.bullets_list: arcade.SpriteList = bullets_list
 
         # Текущая цель
         self.curr_target: arcade.Sprite | None = None
