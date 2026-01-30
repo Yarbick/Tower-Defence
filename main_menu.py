@@ -1,12 +1,13 @@
+# Графика
 import arcade
 import arcade.gui
 from arcade.gui.widgets.buttons import UIFlatButtonStyle
-
+# Меню уровней
 from levels_menu import LevelsMenu
 
 # Константы
-TILE_SIZE = 64
 TILEMAP_SCALING = 2.0
+TILE_SIZE = 32 * TILEMAP_SCALING
 BACKGROUND_SPEED = 100
 
 

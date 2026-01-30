@@ -1,11 +1,11 @@
+# Графика
 import arcade
 import arcade.gui
 from pyglet.graphics import Batch
-from arcade.gui.widgets.buttons import UIFlatButtonStyle
-
+# Уровни
 from level import Level
-
-LEVELS_COUNT = 5
+# Прототипы
+from resources.prototypes.levels import LEVELS
 
 
 class BackButton(arcade.gui.UIFlatButton):
@@ -77,10 +77,10 @@ class LevelsMenu(arcade.View):
         self.ui_manager.enable()
         # Общий стиль кнопок
         button_style = {
-            "normal": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(60, 60, 60)),
-            "hover": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(80, 80, 80)),
-            "press": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(100, 100, 100)),
-            "disabled": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(160, 160, 160))
+            "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(60, 60, 60)),
+            "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(80, 80, 80)),
+            "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(100, 100, 100)),
+            "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(160, 160, 160))
         }
         # Кнопка Back
         self.back_button = BackButton(
@@ -90,14 +90,14 @@ class LevelsMenu(arcade.View):
         self.ui_manager.add(self.back_button)
         # Layout для кнопок уровней
         self.levels_layout = arcade.gui.UIBoxLayout(
-            x=20, y=self.screen_height - self.header_text.font_size * 4 - 10 - LEVELS_COUNT * 60,
+            x=20, y=self.screen_height - self.header_text.font_size * 4 - 10 - len(LEVELS) * 60,
             vertical=True, space_between=10
         )
         # Добавление кнопок
-        for level_name in range(1, LEVELS_COUNT + 1):
+        for level_name in LEVELS:
             level_button = LevelButton(
-                str(level_name),
-                width=self.screen_width - self.levels_layout.left * 2, text=f"Level {level_name}", style=button_style
+                level_name,
+                width=self.screen_width - self.levels_layout.left * 2, text=level_name, style=button_style
             )
             self.levels_layout.add(level_button)
         self.ui_manager.add(self.levels_layout)

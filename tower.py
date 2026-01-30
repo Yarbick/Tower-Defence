@@ -1,7 +1,11 @@
+# Графика
 import arcade
+# Математические расчёты
 from math import atan2
-
+# Игровые объекты
 import bullet
+# Прототипы
+from resources.prototypes.towers import TOWERS
 
 # Константы
 TOWER_SCALING = 2.0
@@ -9,6 +13,47 @@ TOWER_SCALING = 2.0
 
 class Tower(arcade.Sprite):
     """Макет башни"""
+    def __init__(self, tower_name: str, center_x: int | float, center_y: int | float, view: arcade.View):
+        super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
+
+        # Привязка к уровню
+        self.view: arcade.View = view
+
+        # Загрузка текстур
+        self.base_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["base_texture"])
+        self.base_max_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["base_max_texture"])
+        self.turret_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["turret_texture"])
+        self.bullet_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["bullet_texture"])
+        self.attack_range_texture: arcade.Texture = arcade.load_texture(
+            "resources/assets/images/towers/attack_range.png"
+        )
+        self.texture = self.turret_texture
+
+        # Показатели башни
+        self.damage: int | float = TOWERS[tower_name]["damage"]
+        self.fire_rate: int | float = TOWERS[tower_name]["fire_rate"]
+        self.radius: int | float = TOWERS[tower_name]["radius"]
+        self.bullet_speed: int | float = TOWERS[tower_name]["bullet_speed"]
+        self.price: int = TOWERS[tower_name]["price"]
+
+        # Текущий уровень улучшения
+        self.upgrade_level: int = 1
+        # Время с последнего выстрела
+        self.fire_timer: float = 0.0
+
+        # Основание башни
+        self.base: arcade.Sprite = arcade.Sprite(self.base_texture, scale=TOWER_SCALING)
+        self.base.position = self.center_x, self.center_y
+
+        # Радиус атаки
+        self.attack_range: arcade.Sprite = arcade.Sprite(self.attack_range_texture, scale=self.radius * TOWER_SCALING)
+        self.attack_range.position = center_x, center_y
+
+        # Пуля
+        self.bullet = bullet.Bullet
+
+        # Текущая цель
+        self.curr_target: arcade.Sprite | None = None
 
     def update(self, delta_time: float = 1 / 60) -> None:
         self.find_target()
@@ -59,204 +104,39 @@ class Tower(arcade.Sprite):
 
 
 class BasicTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
-        # Привязка к уровню
-        self.view: arcade.View = view
+    """Базовая башня"""
 
-        # Загрузка текстур
-        self.base_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/basic_tower/base.png"
-        )
-        self.base_max_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/basic_tower/base_max.png"
-        )
-        self.turret_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/basic_tower/turret.png"
-        )
-        self.bullet_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/basic_tower/bullet.png"
-        )
-        self.attack_range_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/attack_range.png"
-        )
-        self.texture = self.turret_texture
+    prototype_name: str = "basic_tower"
 
-        # Показатели башни
-        self.damage: int | float = 80
-        self.fire_rate: int | float = 1 / 3
-        self.radius: int | float = 5
-        self.bullet_speed: int | float = 750
-        self.price = 150
-
-        # Текущий уровень улучшения
-        self.upgrade_level: int = 1
-        # Время с последнего выстрела
-        self.fire_timer: float = 0.0
-
-        # Основание башни
-        self.base: arcade.Sprite = arcade.Sprite(self.base_texture, scale=TOWER_SCALING)
-        self.base.position = self.center_x, self.center_y
-
-        # Радиус атаки
-        self.attack_range: arcade.Sprite = arcade.Sprite(self.attack_range_texture, scale=self.radius * TOWER_SCALING)
-        self.attack_range.position = center_x, center_y
-
-        # Пуля
-        self.bullet = bullet.Bullet
-
-        # Текущая цель
-        self.curr_target: arcade.Sprite | None = None
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)
 
 
 class ExplosiveTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
-        # Привязка к уровню
-        self.view: arcade.View = view
+    """Взрывная башня"""
 
-        # Загрузка текстур
-        self.base_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/explosive_tower/base.png"
-        )
-        self.base_max_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/explosive_tower/base_max.png"
-        )
-        self.turret_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/explosive_tower/turret.png"
-        )
-        self.bullet_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/explosive_tower/bullet.png"
-        )
-        self.attack_range_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/attack_range.png"
-        )
-        self.texture = self.turret_texture
+    prototype_name: str = "explosive_tower"
 
-        # Показатели башни
-        self.damage: int | float = 50
-        self.fire_rate: int | float = 1 / 2
-        self.radius: int | float = 4
-        self.bullet_speed: int | float = 600
-        self.price = 200
-
-        # Текущий уровень улучшения
-        self.upgrade_level: int = 1
-        # Время с последнего выстрела
-        self.fire_timer: float = 0.0
-
-        # Основание башни
-        self.base: arcade.Sprite = arcade.Sprite(self.base_texture, scale=TOWER_SCALING)
-        self.base.position = self.center_x, self.center_y
-
-        # Радиус атаки
-        self.attack_range: arcade.Sprite = arcade.Sprite(self.attack_range_texture, scale=self.radius * TOWER_SCALING)
-        self.attack_range.position = center_x, center_y
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)
 
         # Пуля
         self.bullet = bullet.ExplosiveBullet
 
-        # Текущая цель
-        self.curr_target: arcade.Sprite | None = None
-
 
 class SniperTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
-        # Привязка к уровню
-        self.view: arcade.View = view
+    """Снайперская башня"""
 
-        # Загрузка текстур
-        self.base_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/sniper_tower/base.png"
-        )
-        self.base_max_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/sniper_tower/base_max.png"
-        )
-        self.turret_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/sniper_tower/turret.png"
-        )
-        self.bullet_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/sniper_tower/bullet.png"
-        )
-        self.attack_range_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/attack_range.png"
-        )
-        self.texture = self.turret_texture
+    prototype_name: str = "sniper_tower"
 
-        # Показатели башни
-        self.damage: int | float = 300
-        self.fire_rate: int | float = 1 / 0.5
-        self.radius: int | float = 12
-        self.bullet_speed: int | float = 1500
-        self.price = 200
-
-        # Текущий уровень улучшения
-        self.upgrade_level: int = 1
-        # Время с последнего выстрела
-        self.fire_timer: float = 0.0
-
-        # Основание башни
-        self.base: arcade.Sprite = arcade.Sprite(self.base_texture, scale=TOWER_SCALING)
-        self.base.position = self.center_x, self.center_y
-
-        # Радиус атаки
-        self.attack_range: arcade.Sprite = arcade.Sprite(self.attack_range_texture, scale=self.radius * TOWER_SCALING)
-        self.attack_range.position = center_x, center_y
-
-        # Пуля
-        self.bullet = bullet.Bullet
-
-        # Текущая цель
-        self.curr_target: arcade.Sprite | None = None
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)
 
 
 class MinigunTower(Tower):
-    def __init__(self, center_x: int | float, center_y: int | float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
-        # Привязка к уровню
-        self.view: arcade.View = view
+    """Миниган башня"""
 
-        # Загрузка текстур
-        self.base_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/minigun_tower/base.png"
-        )
-        self.base_max_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/minigun_tower/base_max.png"
-        )
-        self.turret_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/minigun_tower/turret.png"
-        )
-        self.bullet_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/minigun_tower/bullet.png"
-        )
-        self.attack_range_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/attack_range.png"
-        )
-        self.texture = self.turret_texture
+    prototype_name: str = "minigun_tower"
 
-        # Показатели башни
-        self.damage: int | float = 25
-        self.fire_rate: int | float = 1 / 15
-        self.radius: int | float = 8
-        self.bullet_speed: int | float = 1000
-        self.price = 300
-
-        # Текущий уровень улучшения
-        self.upgrade_level: int = 1
-        # Время с последнего выстрела
-        self.fire_timer: float = 0.0
-
-        # Основание башни
-        self.base: arcade.Sprite = arcade.Sprite(self.base_texture, scale=TOWER_SCALING)
-        self.base.position = self.center_x, self.center_y
-
-        # Радиус атаки
-        self.attack_range: arcade.Sprite = arcade.Sprite(self.attack_range_texture, scale=self.radius * TOWER_SCALING)
-        self.attack_range.position = center_x, center_y
-
-        # Пуля
-        self.bullet = bullet.Bullet
-
-        # Текущая цель
-        self.curr_target: arcade.Sprite | None = None
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)

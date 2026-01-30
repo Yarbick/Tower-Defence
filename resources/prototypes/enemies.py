@@ -1,0 +1,62 @@
+from arcade import load_texture
+
+# Макет прототипа врага:
+# "<имя>": {
+#   "idle_texture": путь к текстуре с стандартной позицией
+#   "dead_animation_textures": список путей к текстурами с анимацией смерти
+#   "health": здоровье
+#   "armor": процентное поглощение урона
+#   "speed": скорость
+#   "damage": урон по базе игрока
+#   "kill_reward": награда за убийство
+# }
+
+ENEMIES = {
+    "basic_enemy": {
+        "idle_texture": "resources/assets/images/enemies/basic_enemy/idle.png",
+        "dead_animation_textures": tuple(
+            f"resources/assets/images/enemies/basic_enemy/dead_animation/dead_{i}.png" for i in range(1, 6)
+        ),
+        "health": 100,
+        "armor": 0.1,
+        "speed": 200,
+        "damage": 1,
+        "kill_reward": 20
+    },
+
+    "fast_enemy": {
+        "idle_texture": "resources/assets/images/enemies/fast_enemy/idle.png",
+        "dead_animation_textures": tuple(
+            f"resources/assets/images/enemies/fast_enemy/dead_animation/dead_{i}.png" for i in range(1, 6)
+        ),
+        "health": 75,
+        "armor": 0.0,
+        "speed": 350,
+        "damage": 1,
+        "kill_reward": 20
+    },
+
+    "big_enemy": {
+        "idle_texture": "resources/assets/images/enemies/big_enemy/idle.png",
+        "dead_animation_textures": tuple(
+            f"resources/assets/images/enemies/big_enemy/dead_animation/dead_{i}.png" for i in range(1, 6)
+        ),
+        "health": 300,
+        "armor": 0.4,
+        "speed": 125,
+        "damage": 2,
+        "kill_reward": 30
+    },
+
+    "push_enemy": {
+        "idle_texture": "resources/assets/images/enemies/push_enemy/idle.png",
+        "dead_animation_textures": tuple(
+            f"resources/assets/images/enemies/push_enemy/dead_animation/dead_{i}.png" for i in range(1, 6)
+        ),
+        "health": 225,
+        "armor": 0.25,
+        "speed": 275,
+        "damage": 2,
+        "kill_reward": 40
+    }
+}

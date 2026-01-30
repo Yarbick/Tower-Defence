@@ -1,6 +1,8 @@
+# Графика
 import arcade
+# Математические расчёты
 from math import atan2, sin, cos
-
+# Игровые объекты
 import enemy
 
 # Константы

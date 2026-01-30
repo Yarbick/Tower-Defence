@@ -1,4 +1,7 @@
+# Графика
 import arcade
+# Прототипы
+from resources.prototypes.enemies import ENEMIES
 
 # Константы
 ENEMY_SCALING = 3.0
@@ -8,11 +11,27 @@ DEAD_ANIMATION_SPEED = 1 / 30
 class Enemy(arcade.Sprite):
     """Макет врага"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, view: arcade.View):
+    def __init__(self, enemy_name: str, center_x: int | float, center_y: int | float, way: tuple, difficulty: float,
+                 view: arcade.View):
         super().__init__(center_x=center_x, center_y=center_y, scale=ENEMY_SCALING)
 
         # Привязка к уровню
         self.view: arcade.View = view
+
+        # Загрузка текстур
+        self.idle_texture: arcade.Texture = arcade.load_texture(ENEMIES[enemy_name]["idle_texture"])
+        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
+            arcade.load_texture(ENEMIES[enemy_name]["dead_animation_textures"][i])
+            for i in range(len(ENEMIES[enemy_name]["dead_animation_textures"]))
+        )
+        self.texture = self.idle_texture
+
+        # Показатели врага
+        self.health: int = ENEMIES[enemy_name]["health"] * difficulty
+        self.armor: float = ENEMIES[enemy_name]["armor"]
+        self.speed: int = ENEMIES[enemy_name]["speed"]
+        self.damage: int = ENEMIES[enemy_name]["damage"]
+        self.kill_reward: int = ENEMIES[enemy_name]["kill_reward"]
 
         # Направление движения
         self.direction_x: int = 0
@@ -137,90 +156,34 @@ class Enemy(arcade.Sprite):
 class BasicEnemy(Enemy):
     """Базовый враг"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty, view=view)
+    prototype_name: str = "basic_enemy"
 
-        # Загрузка текстур
-        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/basic_enemy/idle.png")
-        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
-            arcade.load_texture(f"resources/assets/images/enemies/basic_enemy/dead_animation/dead_{i}.png")
-            for i in range(1, 6)
-        )
-
-        self.texture = self.idle_texture
-
-        # Показатели врага
-        self.health: int = 100 * difficulty
-        self.armor: float = 0.1
-        self.speed: int = 200
-        self.damage: int = 1
-        self.kill_reward: int = 20
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)
 
 
 class FastEnemy(Enemy):
     """Быстрый враг"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty, view=view)
+    prototype_name: str = "fast_enemy"
 
-        # Загрузка текстур
-        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/fast_enemy/idle.png")
-        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
-            arcade.load_texture(f"resources/assets/images/enemies/fast_enemy/dead_animation/dead_{i}.png")
-            for i in range(1, 6)
-        )
-
-        self.texture = self.idle_texture
-
-        # Показатели врага
-        self.health: int = 75 * difficulty
-        self.armor: float = 0.0
-        self.speed: int = 350
-        self.damage: int = 1
-        self.kill_reward: int = 15
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)
 
 
 class BigEnemy(Enemy):
     """Большой враг"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty, view=view)
+    prototype_name: str = "big_enemy"
 
-        # Загрузка текстур
-        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/big_enemy/idle.png")
-        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
-            arcade.load_texture(f"resources/assets/images/enemies/big_enemy/dead_animation/dead_{i}.png")
-            for i in range(1, 6)
-        )
-
-        self.texture = self.idle_texture
-
-        # Показатели врага
-        self.health: int = 250 * difficulty
-        self.armor: float = 0.4
-        self.speed: int = 150
-        self.damage: int = 2
-        self.kill_reward: int = 30
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)
 
 
 class PushEnemy(Enemy):
     """Враг-пушер"""
 
-    def __init__(self, center_x: int | float, center_y: int | float, way: tuple, difficulty: float, view: arcade.View):
-        super().__init__(center_x=center_x, center_y=center_y, way=way, difficulty=difficulty, view=view)
+    prototype_name: str = "push_enemy"
 
-        # Загрузка текстур
-        self.idle_texture: arcade.Texture = arcade.load_texture("resources/assets/images/enemies/push_enemy/idle.png")
-        self.dead_animation_textures: tuple[arcade.Texture] = tuple(
-            arcade.load_texture(f"resources/assets/images/enemies/push_enemy/dead_animation/dead_{i}.png")
-            for i in range(1, 6)
-        )
-
-        self.texture = self.idle_texture
-
-        # Показатели врага
-        self.health: int = 225 * difficulty
-        self.armor: float = 0.25
-        self.speed: int = 275
-        self.damage: int = 2
-        self.kill_reward: int = 40
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)

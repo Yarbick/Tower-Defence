@@ -1,3 +1,4 @@
+# Графика
 import arcade
 
 

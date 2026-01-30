@@ -1,157 +1,136 @@
+# Прочие библиотеки
+from inspect import getmembers
+# Графика
 import arcade
 import arcade.gui
 from pyglet.graphics import Batch
-
+# Бинды клавиатуры
 import controls
+# Игровых объекты
 import tower
 import enemy
 import waves
+# Импорт прототипов
+from resources.prototypes.levels import LEVELS
+from resources.prototypes.towers import TOWERS
 
 # Константы
-TILE_SIZE = 64
 TILEMAP_SCALING = 2.0
-LEVELS = {
-    "1": {
-        "tilemap": "resources/levels/level1.tmx",
-        "waves": (
-            (enemy.BasicEnemy for _ in range(5)),
-            (enemy.BasicEnemy for _ in range(6)),
-            (enemy.BasicEnemy for _ in range(8)),
-            (enemy.BasicEnemy for _ in range(10)),
-            (enemy.BasicEnemy for _ in range(15)),
-            (enemy.BasicEnemy for _ in range(20)),
-            (enemy.BasicEnemy for _ in range(25)),
-            (enemy.BasicEnemy for _ in range(30))
-        ),
-        "wave_rate": 15.0,
-        "difficulty": 1.0
-    },
-    "2": {
-        "tilemap": "resources/levels/level2.tmx",
-        "waves": (
-            (enemy.BasicEnemy for _ in range(5)),
-            (enemy.FastEnemy for _ in range(5)),
-            (enemy.BasicEnemy for _ in range(8)),
-            (enemy.FastEnemy for _ in range(8)),
-            ([enemy.BasicEnemy for _ in range(10)] + [enemy.FastEnemy for _ in range(10)]),
-            ([enemy.BasicEnemy for _ in range(15)] + [enemy.FastEnemy for _ in range(15)]),
-            (enemy.BasicEnemy for _ in range(25)),
-            (enemy.FastEnemy for _ in range(25)),
-            ([enemy.BasicEnemy for _ in range(20)] + [enemy.FastEnemy for _ in range(20)]),
-            ([enemy.BasicEnemy for _ in range(25)] + [enemy.FastEnemy for _ in range(25)]),
-            (enemy.BasicEnemy for _ in range(30)),
-            (enemy.FastEnemy for _ in range(30)),
-            (enemy.BasicEnemy for _ in range(40)),
-            (enemy.FastEnemy for _ in range(40)),
-            (enemy.BasicEnemy for _ in range(40)),
-            (enemy.FastEnemy for _ in range(40)),
-            ([enemy.BasicEnemy for _ in range(40)] + [enemy.FastEnemy for _ in range(40)]),
-        ),
-        "wave_rate": 20.0,
-        "difficulty": 1.1
-    },
-    "3": {
-        "tilemap": "resources/levels/level3.tmx",
-        "waves": (
-            (enemy.BasicEnemy for _ in range(5)),
-            (enemy.BasicEnemy for _ in range(8)),
-            (enemy.FastEnemy for _ in range(8)),
-            (enemy.BigEnemy for _ in range(4)),
-            (enemy.BigEnemy for _ in range(6)),
-            (enemy.BigEnemy for _ in range(8)),
-            ([enemy.BasicEnemy for _ in range(6)] + [enemy.FastEnemy for _ in range(6)]),
-            ([enemy.BasicEnemy for _ in range(6)] + [enemy.BigEnemy for _ in range(6)]),
-            (enemy.BasicEnemy for _ in range(15)),
-            (enemy.BasicEnemy for _ in range(20)),
-            (enemy.FastEnemy for _ in range(20)),
-            (enemy.BigEnemy for _ in range(10)),
-            (enemy.BigEnemy for _ in range(15)),
-            (enemy.BigEnemy for _ in range(20)),
-            ([enemy.BasicEnemy for _ in range(15)] + [enemy.FastEnemy for _ in range(15)]),
-            ([enemy.BasicEnemy for _ in range(20)] + [enemy.BigEnemy for _ in range(10)]),
-            (enemy.BigEnemy for _ in range(15)),
-            ([enemy.BasicEnemy for _ in range(20)] + [enemy.BigEnemy for _ in range(15)]),
-            ([enemy.BasicEnemy for _ in range(20)] + [enemy.BigEnemy for _ in range(20)]),
-            ([enemy.BasicEnemy for _ in range(20)] + [enemy.FastEnemy for _ in range(20)] +
-             [enemy.BigEnemy for _ in range(20)]),
-            ([enemy.BasicEnemy for _ in range(30)] + [enemy.FastEnemy for _ in range(30)] +
-             [enemy.BigEnemy for _ in range(30)])
-        ),
-        "wave_rate": 25.0,
-        "difficulty": 1.2
-    },
-    "4": {
-        "tilemap": "resources/levels/level4.tmx",
-        "waves": (
-            (enemy.BasicEnemy for _ in range(6)),
-            (enemy.FastEnemy for _ in range(6)),
-            (enemy.BigEnemy for _ in range(4)),
-            (enemy.PushEnemy for _ in range(3)),
-            (enemy.BasicEnemy for _ in range(12)),
-            (enemy.FastEnemy for _ in range(12)),
-            ([enemy.BasicEnemy for _ in range(8)] + [enemy.FastEnemy for _ in range(8)]),
-            ([enemy.BasicEnemy for _ in range(10)] + [enemy.BigEnemy for _ in range(4)]),
-            (enemy.BigEnemy for _ in range(6)),
-            (enemy.PushEnemy for _ in range(6)),
-            (enemy.FastEnemy for _ in range(20)),
-            (enemy.BigEnemy for _ in range(10)),
-            (enemy.PushEnemy for _ in range(10)),
-            (enemy.BasicEnemy for _ in range(20)),
-            ([enemy.PushEnemy for _ in range(8)] + [enemy.FastEnemy for _ in range(16)]),
-            ([enemy.PushEnemy for _ in range(8)] + [enemy.BigEnemy for _ in range(8)]),
-            (enemy.BasicEnemy for _ in range(30)),
-            ([enemy.BasicEnemy for _ in range(15)] + [enemy.PushEnemy for _ in range(10)]),
-            ([enemy.PushEnemy for _ in range(10)] + [enemy.FastEnemy for _ in range(15)]),
-            ([enemy.PushEnemy for _ in range(12)] + [enemy.FastEnemy for _ in range(12)] +
-             [enemy.PushEnemy for _ in range(20)]),
-            ([enemy.BasicEnemy for _ in range(25)] + [enemy.BigEnemy for _ in range(20)] +
-             [enemy.PushEnemy for _ in range(30)])
-        ),
-        "wave_rate": 30.0,
-        "difficulty": 1.3
-    },
-    "5": {
-        "tilemap": "resources/levels/level5.tmx",
-        "waves": None,
-        "wave_rate": 35.0,
-        "difficulty": 1.5
-    }
-}
+TILE_SIZE = 32 * TILEMAP_SCALING
 CAMERA_SPEED = 300
 CAMERA_SPEED_BOOST = 2.0
 
 
-class AddTowerButton(arcade.gui.UITextureButton):
-    """Кнопка создания башни"""
+class AddTowerMenu(arcade.gui.UIWidget):
+    """Меню создания новой башни"""
 
-    def __init__(self, adding_tower: tower.Tower(), *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.adding_tower: tower.Tower() = adding_tower
+    # Виджеты
+    class CloseButton(arcade.gui.UIFlatButton):
+        """Кнопка закрытия меню"""
 
-    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-        # Получение родителей
-        layout: arcade.gui.UIBoxLayout = self.parent
-        ui_manager: arcade.gui.UIManager = layout.parent
-        view: arcade.View = ui_manager.window.current_view
+        def on_click(self, event: arcade.gui.UIOnClickEvent):
+            # Закрытие меню
+            menu = self.parent
+            menu.visible = False
 
-        # Создание новой башни
-        new_tower: tower.Tower = self.adding_tower(
-            ((view.world_camera.position[0] - view.screen_width / 2 + layout.center_x) // TILE_SIZE + 0.5) * TILE_SIZE,
-            ((view.world_camera.position[1] - view.screen_height / 2 + layout.center_y) // TILE_SIZE - 0.5) * TILE_SIZE,
-            view
+    class AddTowerButton(arcade.gui.UITextureButton):
+        """Кнопка создания башни"""
+
+        def __init__(self, adding_tower: tower.Tower, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.adding_tower: tower.Tower = adding_tower
+
+        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+            # Получение родителей
+            layout: arcade.gui.UIBoxLayout = self.parent.parent
+            ui_manager: arcade.gui.UIManager = layout.parent
+            view: arcade.View = ui_manager.window.current_view
+
+            # Создание новой башни
+            new_tower: tower.Tower = self.adding_tower(view.selected_tile[0], view.selected_tile[1], view)
+            # Проверка на достаточное количество денег
+            if view.player_money >= new_tower.price:
+                # Вычитание денег у игрока
+                view.player_money -= new_tower.price
+
+                # Добавление башни
+                view.towers_list.append(new_tower.base)
+                view.towers_list.append(new_tower)
+
+                # Закрытие меню создания башни
+                layout.visible = False
+                ui_manager.disable()
+
+    def __init__(self, view):
+        super().__init__()
+        self.with_background(color=(60, 60, 60))
+
+        # Привязка к уровню
+        self.view = view
+
+        # Заголовок
+        self.header_text = arcade.gui.UILabel("Choose a tower", font_name="CGXYZ LCD", font_size=12)
+        self.add(self.header_text)
+
+        # Кнопка закрытия меню
+        self.close_button = self.CloseButton(
+            width=50, height=50, text=">",
+            style={
+                "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(60, 60, 60)),
+                "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(80, 80, 80)),
+                "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(100, 100, 100)),
+                "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(160, 160, 160))
+            }
         )
-        # Проверка на достаточное количество денег
-        if view.player_money >= new_tower.price:
-            # Вычитание денег у игрока
-            view.player_money -= new_tower.price
+        self.add(self.close_button)
 
-            # Добавление башни
-            view.towers_list.append(new_tower.base)
-            view.towers_list.append(new_tower)
+        # Кнопки для создания башен
+        self.add_tower_buttons_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=10, width=50, height=50)
+        self.add(self.add_tower_buttons_layout)
+        for tower_name in TOWERS:
+            # Поиск класса башни по названию прототипа
+            tower_class: tower.Tower | None = None
+            for obj in getmembers(tower):
+                try:
+                    if obj[1].prototype_name == tower_name:
+                        tower_class = obj[1]
+                        break
+                except AttributeError:
+                    continue
 
-            # Закрытие меню создания башни
-            layout.visible = False
-            ui_manager.disable()
+            # Создание кнопки
+            if tower_class:
+                button = self.AddTowerButton(
+                    adding_tower=tower_class, width=50, height=50,
+                    texture=arcade.load_texture(f"resources/assets/images/towers/{tower_name}/base.png")
+                )
+                label = arcade.gui.UILabel(text=str(TOWERS[tower_name]["price"]), font_name="CGXYZ LCD", font_size=6)
+                button.add(label)
+                self.add_tower_buttons_layout.add(button)
+
+        # Настройка координат виджетов под размер экрана
+        self.match_window()
+
+    def match_window(self) -> None:
+        """Настройка координат виджетов под размер экрана"""
+
+        # Заголовок
+        self.header_text.right = self.view.screen_width - 20
+        self.header_text.top = self.view.screen_height - 20
+
+        # Кнопка закрытия меню
+        self.close_button.right = self.header_text.left - 30
+        self.close_button.top = self.view.screen_height
+
+        # Кнопки для создания башен
+        self.add_tower_buttons_layout.left = self.header_text.left
+        self.add_tower_buttons_layout.top = self.view.screen_height * 0.875
+
+        # Главный виджет
+        self.left = self.close_button.right
+        self.bottom = self.add_tower_buttons_layout.bottom - 20
+        self.width = abs(self.view.screen_width - self.close_button.right)
+        self.height = abs(self.view.screen_height - self.add_tower_buttons_layout.bottom) + 20
 
 
 class Level(arcade.View):
@@ -185,6 +164,9 @@ class Level(arcade.View):
         self.bullets_list: arcade.SpriteList | None = None
         self.towers_list: arcade.SpriteList | None = None
 
+        # Спрайтлист для отрисовки одиночных спрайтов
+        self.others_list: arcade.SpriteList | None = None
+
         # Камеры
         self.world_camera: arcade.Camera2D | None = None
         self.gui_camera: arcade.Camera2D | None = None
@@ -201,6 +183,10 @@ class Level(arcade.View):
         self.wave_number_text: arcade.Text | None = None
         self.time_left_text: arcade.Text | None = None
         self.skip_text: arcade.Text | None = None
+        # Виджеты
+        self.ui_manager: arcade.gui.UIManager | None = None
+        # Выделенный тайл
+        self.selected_tile: tuple | None = None
 
         # Нажатые клавиши
         self.keys_pressed: set | None = None
@@ -280,33 +266,12 @@ class Level(arcade.View):
         self.ui_manager._pixelated = True
         self.ui_manager.enable()
         # Layout для кнопок создания башен
-        self.add_tower_layout = arcade.gui.UIBoxLayout(space_between=10, vertical=False)
-        self.add_tower_layout.visible = False
-        self.ui_manager.add(self.add_tower_layout)
-        # Кнопка создания базовой башни
-        self.add_basic_tower_button = AddTowerButton(
-            tower.BasicTower,
-            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/basic_tower/base.png")
-        )
-        self.add_tower_layout.add(self.add_basic_tower_button)
-        # Кнопка создания взрывной башни
-        self.add_explosive_tower_button = AddTowerButton(
-            tower.ExplosiveTower,
-            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/explosive_tower/base.png")
-        )
-        self.add_tower_layout.add(self.add_explosive_tower_button)
-        # Кнопка создания снайперской башни
-        self.add_sniper_tower_button = AddTowerButton(
-            tower.SniperTower,
-            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/sniper_tower/base.png")
-        )
-        self.add_tower_layout.add(self.add_sniper_tower_button)
-        # Кнопка создания башни-минигана
-        self.add_minigun_tower_button = AddTowerButton(
-            tower.MinigunTower,
-            width=50, height=50, texture=arcade.load_texture("resources/assets/images/towers/minigun_tower/base.png")
-        )
-        self.add_tower_layout.add(self.add_minigun_tower_button)
+        self.add_tower_menu = AddTowerMenu(self)
+        self.add_tower_menu.visible = False
+        self.ui_manager.add(self.add_tower_menu)
+        # Выделение выбранного тайла
+        self.selected_tile = None
+
         # Обнуление клавиш
         self.keys_pressed = set()
 
@@ -325,6 +290,12 @@ class Level(arcade.View):
         self.enemies_list.draw(pixelated=True)
         self.bullets_list.draw(pixelated=True)
         self.towers_list.draw(pixelated=True)
+        # Отрисовка выбранного тайла
+        if self.selected_tile:
+            arcade.draw_lbwh_rectangle_outline(
+                self.selected_tile[0] - 0.5 * TILE_SIZE, self.selected_tile[1] - 0.5 * TILE_SIZE , TILE_SIZE, TILE_SIZE,
+                arcade.color.WHITE, 2 * TILEMAP_SCALING
+            )
 
         # Отрисовка интерфейса
         self.gui_camera.use()
@@ -366,17 +337,6 @@ class Level(arcade.View):
         self.time_left_text.text = f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}"
         self.skip_text.batch = self.batch if self.waves.wave_timer >= self.waves.skip_rate else None
 
-    def on_mouse_press(self, x: int, y: int, key: int, modifiers: int) -> None:
-        # Изменение башен
-        if key == arcade.MOUSE_BUTTON_LEFT:
-            self.edit_tower(x, y)
-
-    def on_key_press(self, key: int, modifiers: int) -> None:
-        self.keys_pressed.add(key)
-
-    def on_key_release(self, key: int, modifiers: int) -> None:
-        self.keys_pressed.remove(key)
-
     def on_resize(self, width: int, height: int) -> None:
         # Получаем новые размеры экрана
         self.screen_width, self.screen_height = width, height
@@ -392,6 +352,27 @@ class Level(arcade.View):
 
         # Настройка интерфейса под новые размеры
         self.health_text.y = self.screen_height - 20
+        self.money_text.y = self.screen_height - 20
+
+        self.add_tower_menu.match_window()
+
+    def on_mouse_press(self, x: int, y: int, key: int, modifiers: int) -> None:
+        # Нахождение координат клика относительно тайлов игрового мира
+        world_x: float = ((self.world_camera.position[0] - self.screen_width * 0.5 + x) // TILE_SIZE + 0.5) * TILE_SIZE
+        world_y: float = ((self.world_camera.position[1] - self.screen_height * 0.5 + y) // TILE_SIZE + 0.5) * TILE_SIZE
+
+        # Выделение клетки
+        self.selected_tile = world_x, world_y
+
+        # Изменение башен
+        if key == arcade.MOUSE_BUTTON_LEFT:
+            self.edit_tower(world_x, world_y)
+
+    def on_key_press(self, key: int, modifiers: int) -> None:
+        self.keys_pressed.add(key)
+
+    def on_key_release(self, key: int, modifiers: int) -> None:
+        self.keys_pressed.remove(key)
 
     # Методы для камер
     def check_camera_borders(self, camera: arcade.Camera2D) -> None:
@@ -464,12 +445,8 @@ class Level(arcade.View):
         return enemies_way
 
     # Методы взаимодействия с картой
-    def edit_tower(self, x: int, y: int) -> None:
+    def edit_tower(self, world_x: int, world_y: int) -> None:
         """Создание и изменение башен"""
-
-        # Нахождение координат клика относительно тайлов игрового мира
-        world_x: float = ((self.world_camera.position[0] - self.screen_width * 0.5 + x) // TILE_SIZE + 0.5) * TILE_SIZE
-        world_y: float = ((self.world_camera.position[1] - self.screen_height * 0.5 + y) // TILE_SIZE + 0.5) * TILE_SIZE
 
         # Проверка на клик по платформе
         if arcade.get_sprites_at_point((world_x, world_y), self.platforms_list):
@@ -479,11 +456,8 @@ class Level(arcade.View):
                 pass
             else:
                 # Открываем меню создания новой башни
-                self.add_tower_layout.visible = True
-                # Переносим меню к месту текущего клика
-                self.add_tower_layout.center_x = x
-                self.add_tower_layout.center_y = y + TILE_SIZE
+                self.add_tower_menu.visible = True
         else:
             # Закрываем меню
             self.ui_manager.disable()
-            self.add_tower_layout.visible = False
+            self.add_tower_menu.visible = False

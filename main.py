@@ -1,15 +1,19 @@
+# Графика
 import arcade
-
+# Главное меню
 from main_menu import MainMenu
 
 
-def main():
+def main() -> None:
+    # Окно
     window = arcade.Window(1000, 800, "Tower Defence", resizable=True)
     window.set_minimum_size(800, 500)
     window.set_maximum_size(1920, 1080)
+    # Главное меню
     main_menu_view = MainMenu()
     main_menu_view.setup()
     window.show_view(main_menu_view)
+    # Запуск
     arcade.run()
 
 
