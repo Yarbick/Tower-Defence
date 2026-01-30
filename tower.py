@@ -35,6 +35,7 @@ class Tower(arcade.Sprite):
         self.radius: int | float = TOWERS[tower_name]["radius"]
         self.bullet_speed: int | float = TOWERS[tower_name]["bullet_speed"]
         self.price: int = TOWERS[tower_name]["price"]
+        self.upgrade_price: int = self.price * 0.5
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1
@@ -101,6 +102,27 @@ class Tower(arcade.Sprite):
 
             # Сброс таймера
             self.fire_timer = 0.0
+
+    def upgrade(self):
+        """Улучшение башни"""
+
+        # Проверка на лимит уровней
+        if self.upgrade_level < 5:
+            # Улучшение показателей
+            self.damage *= 1.2
+            self.fire_rate *= 0.9
+            self.bullet_speed *= 1.2
+            self.radius *= 1.1
+            self.attack_range.scale = self.radius * TOWER_SCALING
+
+            # Повышение целы улучшения
+            self.upgrade_price *= 1.4
+            # Прибавление уровня
+            self.upgrade_level += 1
+
+            # Смена текстуры основания на максимальном уровне
+            if self.upgrade_level == 5:
+                self.base.texture = self.base_max_texture
 
 
 class BasicTower(Tower):

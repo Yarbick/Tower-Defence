@@ -57,6 +57,6 @@ TOWERS = {
         "fire_rate": 1 / 15,
         "radius": 7,
         "bullet_speed": 1000,
-        "price": 400
+        "price": 300
     }
 }
