@@ -8,14 +8,21 @@ from level import Level
 from resources.prototypes.levels import LEVELS
 
 
+# Кнопки
 class BackButton(arcade.gui.UIFlatButton):
     """Кнопка Back"""
 
     def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-        # Возвращаемся в главное меню
-        main_menu_view = self.parent.window.current_view.parent
+        # Получение родителей
+        ui_manager: arcade.gui.UIManager = self.parent
+        window: arcade.Window = ui_manager.window
+        levels_menu: arcade.View = window.current_view
+
+        # Возвращение в главное меню
+        ui_manager.disable()
+        main_menu_view: arcade.View = levels_menu.parent
         main_menu_view.setup()
-        self.parent.window.show_view(main_menu_view)
+        window.show_view(main_menu_view)
 
 
 class LevelButton(arcade.gui.UIFlatButton):
@@ -25,21 +32,25 @@ class LevelButton(arcade.gui.UIFlatButton):
         self.level_name: str = level_name
 
     def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+        # Получение родителей
+        ui_manager: arcade.gui.UIManager = self.parent.parent
+        window: arcade.Window = ui_manager.window
+        levels_menu: arcade.View = window.current_view
+
         # Переключение на уровень
-        self.parent.parent.window.current_view.ui_manager.disable()
-        level_view = Level(self.level_name)
+        ui_manager.disable()
+        level_view: arcade.View = Level(self.level_name, levels_menu)
         level_view.setup()
-        self.parent.parent.window.show_view(level_view)
-        pass
+        window.show_view(level_view)
 
 
 class LevelsMenu(arcade.View):
     """Меню выбора уровня"""
 
-    def __init__(self, parent):
+    def __init__(self, parent: arcade.View):
         super().__init__()
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
-        self.parent = parent
+        self.parent: arcade.View = parent
 
         # Загружаем шрифты
         arcade.load_font("resources/assets/fonts/CGXYZLCD/CGXYZLCD-Regular.otf")

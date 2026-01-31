@@ -21,7 +21,7 @@ ENEMIES = {
         "armor": 0.1,
         "speed": 200,
         "damage": 1,
-        "kill_reward": 20
+        "kill_reward": 15
     },
 
     "fast_enemy": {
@@ -33,7 +33,7 @@ ENEMIES = {
         "armor": 0.0,
         "speed": 350,
         "damage": 1,
-        "kill_reward": 20
+        "kill_reward": 15
     },
 
     "big_enemy": {
@@ -45,7 +45,7 @@ ENEMIES = {
         "armor": 0.4,
         "speed": 125,
         "damage": 2,
-        "kill_reward": 30
+        "kill_reward": 25
     },
 
     "push_enemy": {
@@ -57,6 +57,6 @@ ENEMIES = {
         "armor": 0.25,
         "speed": 275,
         "damage": 2,
-        "kill_reward": 40
+        "kill_reward": 35
     }
 }

@@ -6,7 +6,7 @@ import arcade.gui
 from pyglet.graphics import Batch
 # Бинды клавиатуры
 import controls
-# Игровых объекты
+# Игровые объекты
 import tower
 import enemy
 import waves
@@ -24,7 +24,7 @@ CAMERA_SPEED_BOOST = 2.0
 class TowerMenu(arcade.gui.UIWidget):
     """Макет меню башен"""
 
-    # Виджеты
+    # Кнопки
     class CloseButton(arcade.gui.UIFlatButton):
         """Кнопка закрытия меню"""
 
@@ -64,7 +64,7 @@ class TowerMenu(arcade.gui.UIWidget):
 class AddTowerMenu(TowerMenu):
     """Меню создания новой башни"""
 
-    # Виджеты
+    # Кнопки
     class AddTowerButton(arcade.gui.UITextureButton):
         """Кнопка создания башни"""
 
@@ -93,12 +93,12 @@ class AddTowerMenu(TowerMenu):
                 menu.close()
 
     # Методы
-    def __init__(self, view):
+    def __init__(self, view: arcade.View):
         super().__init__()
         self.with_background(color=(40, 40, 40))
 
         # Привязка к уровню
-        self.view = view
+        self.view: arcade.View = view
 
         # Заголовок
         self.header_text = arcade.gui.UILabel("Create tower", font_name="CGXYZ LCD", font_size=12)
@@ -147,7 +147,7 @@ class AddTowerMenu(TowerMenu):
 class EditTowerMenu(TowerMenu):
     """Меню изменения башни"""
 
-    # Виджеты
+    # Кнопки
     class UpgradeTowerButton(arcade.gui.UIFlatButton):
         """Кнопка улучшения башни"""
 
@@ -189,12 +189,12 @@ class EditTowerMenu(TowerMenu):
             menu.close()
 
     # Методы
-    def __init__(self, view):
+    def __init__(self, view: arcade.View):
         super().__init__()
         self.with_background(color=(40, 40, 40))
 
         # Привязка к уровню
-        self.view = view
+        self.view: arcade.View = view
 
         # Заголовок
         self.header_text = arcade.gui.UILabel("Edit tower", font_name="CGXYZ LCD", font_size=12)
@@ -242,13 +242,80 @@ class EditTowerMenu(TowerMenu):
         self.match_window()
 
 
+class ResultWidget(arcade.gui.UIWidget):
+    """Окно с выводом результатов игры"""
+
+    # Кнопки
+    class ReturnToMenuButton(arcade.gui.UIFlatButton):
+        """Кнопка возвращения в главное меню"""
+
+        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+            # Получение родителей
+            level_view: arcade.View = self.parent.view
+            window: arcade.Window = level_view.window
+
+            # Возвращение в главно меню
+            level_view.ui_manager.disable()
+            main_menu_view: arcade.View = level_view.parent.parent
+            main_menu_view.setup()
+            window.show_view(main_menu_view)
+
+    # Методы
+    def __init__(self, view: arcade.View, game_result: bool):
+        super().__init__()
+        self.with_background(color=(40, 40, 40))
+        self.size = 500, 300
+
+        # Привязка к уровню
+        self.view: arcade.View = view
+
+        # Заголовок
+        self.header_text = arcade.gui.UILabel(
+            text="VICTORY" if game_result else "DEFEAT",
+            text_color=arcade.color.GREEN if game_result else arcade.color.RED,
+            font_name="CGXYZ LCD", font_size=20
+        )
+        self.add(self.header_text)
+
+        # Кнопка возвращения в главное меню
+        self.return_to_menu_button = self.ReturnToMenuButton(
+            width=300, height=50, text="Return to Menu",
+            style={
+                "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(60, 60, 60)),
+                "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(80, 80, 80)),
+                "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(100, 100, 100)),
+                "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(160, 160, 160))
+            }
+        )
+        self.add(self.return_to_menu_button)
+
+        # Настройка координат виджетов под размер экрана
+        self.match_window()
+
+    def match_window(self) -> None:
+        """Настройка координат виджетов под размер экрана"""
+
+        # Заголовок
+        self.header_text.center_x = self.view.screen_width * 0.5
+        self.header_text.center_y = self.view.screen_height * 0.5 + self.height * 0.25
+
+        # Кнопка возвращения в главное меню
+        self.return_to_menu_button.center_x = self.view.screen_width * 0.5
+        self.return_to_menu_button.center_y = self.view.screen_height * 0.5 - self.height * 0.25
+
+        # Главный виджет
+        self.center_x = self.view.screen_width * 0.5
+        self.center_y = self.view.screen_height * 0.5
+
+
 class Level(arcade.View):
     """Уровень"""
 
-    def __init__(self, level_name: str):
+    def __init__(self, level_name: str, parent: arcade.View):
         super().__init__()
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
         self.level_name = level_name
+        self.parent: arcade.View = parent
 
         # Размеры окна
         self.screen_width: int | None = None
@@ -339,7 +406,7 @@ class Level(arcade.View):
         self.player_money = 200
         self.game_status = None
 
-        # Создание интерфейса
+        # Создание интерфейса:
         # Текст
         self.batch = Batch()
         self.health_text = arcade.Text(
@@ -367,6 +434,7 @@ class Level(arcade.View):
             470, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
+
         # Виджеты
         self.ui_manager = arcade.gui.UIManager()
         self.ui_manager._pixelated = True
@@ -379,6 +447,9 @@ class Level(arcade.View):
         self.edit_tower_menu = EditTowerMenu(self)
         self.edit_tower_menu.visible = False
         self.ui_manager.add(self.edit_tower_menu)
+        # Окно с выводом результатов игры
+        self.result_widget: ResultWidget | None = None
+
         # Выделение выбранного тайла
         self.selected_tile = None
 
@@ -403,7 +474,7 @@ class Level(arcade.View):
         # Отрисовка выбранного тайла
         if self.selected_tile:
             arcade.draw_lbwh_rectangle_outline(
-                self.selected_tile[0] - 0.5 * TILE_SIZE, self.selected_tile[1] - 0.5 * TILE_SIZE , TILE_SIZE, TILE_SIZE,
+                self.selected_tile[0] - 0.5 * TILE_SIZE, self.selected_tile[1] - 0.5 * TILE_SIZE, TILE_SIZE, TILE_SIZE,
                 arcade.color.WHITE, 2 * TILEMAP_SCALING
             )
 
@@ -415,8 +486,10 @@ class Level(arcade.View):
         self.ui_manager.draw()
 
     def on_update(self, delta_time: float) -> None:
+        # Проверка на конец игры
         if self.game_status is not None:
             return
+        self.check_game_status()
 
         # Движение камеры
         self.world_camera_move(delta_time)
@@ -445,7 +518,7 @@ class Level(arcade.View):
         self.money_text.text = f"Money: {self.player_money}"
         self.wave_number_text.text = f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}"
         self.time_left_text.text = f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}"
-        self.skip_text.batch = self.batch if self.waves.wave_timer >= self.waves.skip_rate else None
+        self.skip_text.batch = self.batch if self.waves.can_skip_wave() else None
 
     def on_resize(self, width: int, height: int) -> None:
         # Получаем новые размеры экрана
@@ -466,8 +539,14 @@ class Level(arcade.View):
 
         self.add_tower_menu.match_window()
         self.edit_tower_menu.match_window()
+        if self.result_widget:
+            self.result_widget.match_window()
 
     def on_mouse_press(self, x: int, y: int, key: int, modifiers: int) -> None:
+        # Проверка на конец игры
+        if self.game_status is not None:
+            return
+
         # Нахождение координат клика относительно тайлов игрового мира
         world_x: float = ((self.world_camera.position[0] - self.screen_width * 0.5 + x) // TILE_SIZE + 0.5) * TILE_SIZE
         world_y: float = ((self.world_camera.position[1] - self.screen_height * 0.5 + y) // TILE_SIZE + 0.5) * TILE_SIZE
@@ -485,7 +564,6 @@ class Level(arcade.View):
     def on_key_release(self, key: int, modifiers: int) -> None:
         self.keys_pressed.remove(key)
 
-    # Методы для камер
     def check_camera_borders(self, camera: arcade.Camera2D) -> None:
         """Проверка камеры на выход за границы экрана"""
 
@@ -514,7 +592,6 @@ class Level(arcade.View):
         # Проверка на выход за границы
         self.check_camera_borders(self.world_camera)
 
-    # Методы для противников
     def find_enemies_way(self) -> list:
         """Нахождение пути для врагов"""
 
@@ -555,7 +632,6 @@ class Level(arcade.View):
 
         return enemies_way
 
-    # Методы взаимодействия с картой
     def edit_tower(self, world_x: int, world_y: int) -> None:
         """Создание и изменение башен"""
 
@@ -574,3 +650,16 @@ class Level(arcade.View):
             else:
                 # Открытие меню создания новой башни
                 self.add_tower_menu.visible = True
+
+    def check_game_status(self):
+        """Проверка на завершение игры"""
+
+        if self.player_health <= 0:  # Проверка на поражение
+            self.game_status = False
+        elif (not self.enemies_list) and (not self.waves.waves) and (not self.waves.enemy_queue):  # Проверка на победу
+            self.game_status = True
+        else:
+            return
+        # Создание окна результатов игры
+        self.result_widget = ResultWidget(self, self.game_status)
+        self.ui_manager.add(self.result_widget)

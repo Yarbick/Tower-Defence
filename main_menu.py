@@ -15,12 +15,16 @@ class PlayButton(arcade.gui.UIFlatButton):
     """Кнопка Play"""
 
     def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+        # Получение родителей
+        ui_manager: arcade.gui.UIManager = self.parent
+        window: arcade.Window = ui_manager.window
+        main_menu_view = window.current_view
+
         # Переключаемся на меню уровней
-        main_menu_view = self.parent.window.current_view
-        main_menu_view.ui_manager.disable()
-        levels_menu_view = LevelsMenu(main_menu_view)
+        ui_manager.disable()
+        levels_menu_view: arcade.View = LevelsMenu(main_menu_view)
         levels_menu_view.setup()
-        self.parent.window.show_view(levels_menu_view)
+        window.show_view(levels_menu_view)
 
 
 class ExitButton(arcade.gui.UIFlatButton):

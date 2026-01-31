@@ -44,10 +44,15 @@ class Waves:
             self.spawn_timer += delta_time
             self.spawn_enemy()
 
+    def can_skip_wave(self) -> bool:
+        """Проверка на возможность вызова следующей волны вручную"""
+
+        return self.wave_timer >= self.skip_rate and self.waves
+
     def skip_wave(self) -> None:
         """Вызов следующей волны вручную"""
 
-        if self.wave_timer >= self.skip_rate and self.waves:
+        if self.can_skip_wave():
             self.skipping = True
 
     def spawn_wave(self) -> None:
@@ -60,7 +65,7 @@ class Waves:
             self.difficulty += 0.05
 
             # Сброс таймера
-            self.wave_timer = 0.0
+            self.wave_timer = 0.0 if self.waves else self.wave_rate
             # Сброс флага
             self.skipping = False
 
