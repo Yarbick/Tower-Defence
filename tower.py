@@ -42,6 +42,9 @@ class Tower(arcade.Sprite):
         # Время с последнего выстрела
         self.fire_timer: float = 0.0
 
+        # Время оглушения
+        self.stunned_time: float = 0.0
+
         # Основание башни
         self.base: arcade.Sprite = arcade.Sprite(self.base_texture, scale=TOWER_SCALING)
         self.base.position = self.center_x, self.center_y
@@ -57,6 +60,11 @@ class Tower(arcade.Sprite):
         self.curr_target: arcade.Sprite | None = None
 
     def update(self, delta_time: float = 1 / 60) -> None:
+        # Проверка на оглушение
+        if self.stunned_time > 0:
+            self.stunned_time = max(0.0, self.stunned_time - delta_time)
+            return
+
         self.find_target()
         self.rotate_to_target()
         self.shoot(delta_time)

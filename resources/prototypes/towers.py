@@ -41,7 +41,7 @@ TOWERS = {
         "base_max_texture": "resources/assets/images/towers/sniper_tower/base_max.png",
         "turret_texture": "resources/assets/images/towers/sniper_tower/turret.png",
         "bullet_texture": "resources/assets/images/towers/sniper_tower/bullet.png",
-        "damage": 300,
+        "damage": 400,
         "fire_rate": 1 / 0.75,
         "radius": 12,
         "bullet_speed": 1500,

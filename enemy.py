@@ -1,11 +1,16 @@
+# Прочие библиотеки
+from random import choices, choice, sample
 # Графика
 import arcade
+from pyglet.resource import texture
+
+# Игровые объекты
+import tower
 # Прототипы
 from resources.prototypes.enemies import ENEMIES
 
 # Константы
 ENEMY_SCALING = 3.0
-DEAD_ANIMATION_SPEED = 1 / 30
 
 
 class Enemy(arcade.Sprite):
@@ -46,11 +51,11 @@ class Enemy(arcade.Sprite):
         # Флаги
         self.is_dead = False
 
-        # Анимации
         # Анимация смерти
         self.dead_animation_running: bool = False
         self.dead_animation_frame: int = 0
         self.dead_animation_duration: float = 0.0
+        self.dead_animation_speed: float = 1 / 30
 
     def update(self, delta_time: float = 1 / 60) -> None:
         # Проверка на смерть
@@ -64,7 +69,7 @@ class Enemy(arcade.Sprite):
         # Анимация смерти
         if self.dead_animation_running:
             self.dead_animation_duration += delta_time
-            if self.dead_animation_duration >= DEAD_ANIMATION_SPEED:
+            if self.dead_animation_duration >= self.dead_animation_speed:
                 self.dead_animation_duration = 0.0
 
                 self.dead_animation_frame += 1
@@ -74,6 +79,11 @@ class Enemy(arcade.Sprite):
                     self.remove_from_sprite_lists()
                 else:
                     self.texture = self.dead_animation_textures[self.dead_animation_frame]
+        else:
+            # Обновление анимации
+            self.dead_animation_duration = 0.0
+            self.dead_animation_frame = 0
+            self.texture = self.idle_texture
 
     def move(self, delta_time: float) -> None:
         """Движение"""
@@ -128,7 +138,7 @@ class Enemy(arcade.Sprite):
         self.center_y += change_y
         self.way_traveled += abs(change_x) + abs(change_y)
 
-    def get_damage(self, damage) -> None:
+    def get_damage(self, damage: int | float) -> None:
         """Получение урона"""
 
         # Определение и получение урона
@@ -146,11 +156,8 @@ class Enemy(arcade.Sprite):
         # Начисление денег игроку
         self.view.player_money += self.kill_reward
 
-        # Обновление и запуск анимации
+        # Запуск анимации
         self.dead_animation_running = True
-        self.dead_animation_duration = 0.0
-        self.dead_animation_frame = 0
-        self.texture = self.dead_animation_textures[self.dead_animation_frame]
 
 
 class BasicEnemy(Enemy):
@@ -187,3 +194,192 @@ class PushEnemy(Enemy):
 
     def __init__(self, *args, **kwargs):
         super().__init__(self.prototype_name, *args, **kwargs)
+
+
+class BossEnemy(Enemy):
+    """Босс"""
+
+    prototype_name: str = "boss_enemy"
+
+    class Rocket(arcade.Sprite):
+        """Ракета"""
+
+        def __init__(self, change_x, change_y, stun_duration, parent, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            # Создание атрибутов из аргументов
+            self.change_x, self.change_y = change_x, change_y
+            self.stun_duration: float = stun_duration
+            self.parent: BossEnemy = parent
+
+        def update(self, delta_time: float = 1 / 60) -> None:
+            # Обновление позиции
+            self.center_x += self.change_x * delta_time
+            self.center_y += self.change_y * delta_time
+
+            # Проверка на попадание по башне
+            targets: list = arcade.check_for_collision_with_list(self, self.parent.view.towers_turrets_list)
+            for target in targets:
+                # Оглушение башни
+                target.stunned_time += self.stun_duration
+                # Удаление пули
+                self.remove_from_sprite_lists()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.prototype_name, *args, **kwargs)
+
+        # Загрузка текстур
+        self.idle_texture_1_phase: arcade.Texture = arcade.load_texture(
+            ENEMIES[self.prototype_name]["idle_texture_1_phase"]
+        )
+        self.idle_texture_2_phase: arcade.Texture = arcade.load_texture(
+            ENEMIES[self.prototype_name]["idle_texture_2_phase"]
+        )
+        self.attack_animation_textures_1_phase: tuple[arcade.Texture] = tuple(
+            arcade.load_texture(ENEMIES[self.prototype_name]["attack_animation_textures_1_phase"][i])
+            for i in range(len(ENEMIES[self.prototype_name]["attack_animation_textures_1_phase"]))
+        )
+        self.attack_animation_textures_2_phase: tuple[arcade.Texture] = tuple(
+            arcade.load_texture(ENEMIES[self.prototype_name]["attack_animation_textures_2_phase"][i])
+            for i in range(len(ENEMIES[self.prototype_name]["attack_animation_textures_2_phase"]))
+        )
+        self.rocket_texture: arcade.Texture = arcade.load_texture(ENEMIES[self.prototype_name]["rocket_texture"])
+        self.idle_texture = self.idle_texture_1_phase
+
+        # Показатели призывной атаки
+        self.spawn_attack_rate: int | float = ENEMIES[self.prototype_name]["spawn_attack_rate"]
+        self.spawn_queue: list[Enemy] = []
+        self.spawn_rate: int | float = ENEMIES[self.prototype_name]["spawn_rate"]
+        self.spawn_timer: float = 0.0
+        # Показатели ракетной атаки
+        self.rocket_attack_rate: float = ENEMIES[self.prototype_name]["rocket_attack_rate"]
+        self.rockets_count: int = ENEMIES[self.prototype_name]["rockets_count"]
+        self.rocket_speed: int | float = ENEMIES[self.prototype_name]["rocket_speed"]
+        self.rocket_stun_duration: int | float = ENEMIES[self.prototype_name]["rocket_stun_duration"]
+        # Порог здоровья для перехода на вторую фазу
+        self.health_for_2_phase: int | float = self.health // 2
+
+        # Флаги
+        self.is_2_phase: bool = False
+
+        # Анимация атаки
+        self.attack_animation_textures = self.attack_animation_textures_1_phase
+        self.attack_animation_running: bool = False
+        self.attack_animation_frame: int = 0
+        self.attack_animation_duration: float = 0.0
+        self.attack_animation_speed: float = 1 / 4
+
+        # Атаки
+        arcade.schedule(self.start_spawn_enemies, self.spawn_attack_rate)
+        arcade.schedule(self.spawn_rockets, self.rocket_attack_rate)
+
+    def update(self, delta_time: float = 1 / 60) -> None:
+        super().update()
+
+        # Создание врагов из очереди призыва
+        self.spawn_enemies(delta_time)
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        super().update_animation(delta_time)
+
+        # Анимация атаки
+        if self.attack_animation_running:
+            self.attack_animation_duration += delta_time
+            if self.attack_animation_duration >= self.attack_animation_speed:
+                self.attack_animation_frame = (self.attack_animation_frame + 1) % len(self.attack_animation_textures)
+                self.texture = self.attack_animation_textures[self.attack_animation_frame]
+
+                self.attack_animation_duration = 0.0
+        else:
+            # Обновление анимации
+            self.attack_animation_frame: int = 0
+            self.attack_animation_duration: float = 0.0
+            self.texture = self.idle_texture
+
+    def start_spawn_enemies(self, *args) -> None:
+        """Добавление врагов в очередь призыва"""
+
+        # Запуск анимации
+        self.attack_animation_running = True
+        # Добавление врагов в очередь призыва
+        self.spawn_queue.extend(choices([BasicEnemy, FastEnemy, BigEnemy, PushEnemy], k=6))
+
+    def spawn_enemies(self, delta_time: float) -> None:
+        """Создание врагов из очереди призыва"""
+
+        if self.spawn_queue:
+            self.spawn_timer += delta_time
+            if self.spawn_timer >= self.spawn_rate:
+                # Создание врага
+                self.view.enemies_list.append(
+                    self.spawn_queue.pop(0)(self.center_x, self.center_y, self.way[self.curr_part - 1:], 2.0, self.view)
+                )
+
+                # Обновление таймера
+                self.spawn_timer = 0.0
+        else:
+            # Отключение анимации
+            self.attack_animation_running = False
+
+    def spawn_rockets(self, *args) -> None:
+        """Создание ракет"""
+
+        # Подбор трёх случайных башен
+        targets: list = sample(
+            list(self.view.towers_turrets_list),
+            min(self.rockets_count, len(self.view.towers_turrets_list))
+        )
+        # Создание ракеты для выбранной башни
+        for target in targets:
+            # Выбор направления
+            rocket_direction: int = choice((-1, 1))
+
+            # Создание ракеты
+            rocket = self.Rocket(
+                0, self.rocket_speed * rocket_direction, self.rocket_stun_duration, self,
+                path_or_texture=self.rocket_texture, scale=ENEMY_SCALING * (2 / 3),
+                center_x=target.center_x, center_y=target.center_y + 32 * ENEMY_SCALING * 10 * -rocket_direction,
+                angle=180 if rocket_direction == -1 else 0
+            )
+            self.view.enemy_bullets_list.append(rocket)
+
+    def start_2_phase(self) -> None:
+        """Запуск второй фазы"""
+
+        # Смена текстур
+        self.idle_texture = self.idle_texture_2_phase
+        self.attack_animation_textures = self.attack_animation_textures_2_phase
+        # Изменение показателей
+        self.speed *= 2
+        self.armor *= 0.6
+        self.spawn_attack_rate *= 0.6
+        self.rocket_attack_rate *= 0.6
+        self.rockets_count = int(self.rockets_count * 1.5)
+        self.rocket_stun_duration *= 1.5
+        # Перезаписывание авто вызовов атак
+        arcade.unschedule(self.start_spawn_enemies)
+        arcade.schedule(self.start_spawn_enemies, self.spawn_attack_rate)
+        arcade.unschedule(self.spawn_rockets)
+        arcade.schedule(self.spawn_rockets, self.rocket_attack_rate)
+
+        # Переключение флага
+        self.is_2_phase = True
+
+    def get_damage(self, damage: float) -> None:
+        """Получение урона"""
+
+        super().get_damage(damage)
+
+        if (not self.is_2_phase) and (self.health <= self.health_for_2_phase):
+            self.start_2_phase()
+
+    def dead(self) -> None:
+        """Смерть"""
+
+        super().dead()
+
+        # Снятие всех авто вызовов
+        arcade.unschedule(self.start_spawn_enemies)
+        arcade.unschedule(self.spawn_rockets)
+
+
+# ДОДЕЛАТЬ ВТОРУЮ ФАЗУ

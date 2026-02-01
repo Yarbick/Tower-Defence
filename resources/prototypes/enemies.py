@@ -58,5 +58,32 @@ ENEMIES = {
         "speed": 275,
         "damage": 2,
         "kill_reward": 35
-    }
+    },
+
+    "boss_enemy": {
+        "idle_texture": "resources/assets/images/enemies/boss_enemy/1_phase/idle.png",
+        "idle_texture_1_phase": "resources/assets/images/enemies/boss_enemy/1_phase/idle.png",
+        "idle_texture_2_phase": "resources/assets/images/enemies/boss_enemy/2_phase/idle.png",
+        "rocket_texture": "resources/assets/images/enemies/boss_enemy/rocket.png",
+        "attack_animation_textures_1_phase": tuple(
+            f"resources/assets/images/enemies/boss_enemy/1_phase/attack_animation/attack_{i}.png" for i in range(1, 3)
+        ),
+        "attack_animation_textures_2_phase": tuple(
+            f"resources/assets/images/enemies/boss_enemy/2_phase/attack_animation/attack_{i}.png" for i in range(1, 3)
+        ),
+        "dead_animation_textures": tuple(
+            f"resources/assets/images/enemies/boss_enemy/2_phase/dead_animation/dead_{i}.png" for i in range(1, 8)
+        ),
+        "health": 75000,
+        "armor": 0.35,
+        "speed": 25,
+        "damage": 100,
+        "kill_reward": 1000,
+        "spawn_attack_rate": 5.0,
+        "spawn_rate": 0.25,
+        "rocket_attack_rate": 8.0,
+        "rockets_count": 4,
+        "rocket_speed": 1000,
+        "rocket_stun_duration": 5.0
+    },
 }

@@ -86,8 +86,8 @@ class AddTowerMenu(TowerMenu):
                 menu.view.player_money -= new_tower.price
 
                 # Добавление башни
-                menu.view.towers_list.append(new_tower.base)
-                menu.view.towers_list.append(new_tower)
+                menu.view.towers_bases_list.append(new_tower.base)
+                menu.view.towers_turrets_list.append(new_tower)
 
                 # Закрытие меню
                 menu.close()
@@ -157,8 +157,8 @@ class EditTowerMenu(TowerMenu):
 
             # Поиск башни для улучшения
             editing_tower: tower.Tower = arcade.get_sprites_at_point(
-                menu.view.selected_tile, menu.view.towers_list
-            )[1]
+                menu.view.selected_tile, menu.view.towers_turrets_list
+            )[0]
             # Проверка на возможность удаления
             if editing_tower.upgrade_price <= menu.view.player_money and editing_tower.upgrade_level < 5:
                 # Вычитание денег у игрока
@@ -176,8 +176,8 @@ class EditTowerMenu(TowerMenu):
 
             # Поиск башни для удаления
             deleting_tower: tower.Tower = arcade.get_sprites_at_point(
-                menu.view.selected_tile, menu.view.towers_list
-            )[1]
+                menu.view.selected_tile, menu.view.towers_turrets_list
+            )[0]
 
             # Прибавление денег игроку
             menu.view.player_money += int(deleting_tower.price * deleting_tower.upgrade_level * 0.6)
@@ -337,8 +337,10 @@ class Level(arcade.View):
 
         # Игровые объекты
         self.enemies_list: arcade.SpriteList | None = None
+        self.towers_bases_list: arcade.SpriteList | None = None
+        self.towers_turrets_list: arcade.SpriteList | None = None
+        self.enemy_bullets_list: arcade.SpriteList | None = None
         self.bullets_list: arcade.SpriteList | None = None
-        self.towers_list: arcade.SpriteList | None = None
 
         # Камеры
         self.world_camera: arcade.Camera2D | None = None
@@ -392,9 +394,11 @@ class Level(arcade.View):
 
         # Создание пуль
         self.bullets_list = arcade.SpriteList()
+        self.enemy_bullets_list = arcade.SpriteList()
 
         # Создание башен
-        self.towers_list = arcade.SpriteList()
+        self.towers_bases_list = arcade.SpriteList()
+        self.towers_turrets_list = arcade.SpriteList()
 
         # Создание камер
         self.world_camera = arcade.camera.Camera2D()
@@ -469,8 +473,10 @@ class Level(arcade.View):
         self.platforms_list.draw(pixelated=True)
         # Отрисовка игровых объектов
         self.enemies_list.draw(pixelated=True)
+        self.towers_bases_list.draw(pixelated=True)
+        self.towers_turrets_list.draw(pixelated=True)
+        self.enemy_bullets_list.draw(pixelated=True)
         self.bullets_list.draw(pixelated=True)
-        self.towers_list.draw(pixelated=True)
         # Отрисовка выбранного тайла
         if self.selected_tile:
             arcade.draw_lbwh_rectangle_outline(
@@ -507,10 +513,11 @@ class Level(arcade.View):
         self.enemies_list.update_animation()
 
         # Обновление пуль
+        self.enemy_bullets_list.update()
         self.bullets_list.update()
 
         # Обновление башен
-        self.towers_list.update()
+        self.towers_turrets_list.update()
 
         # Обновление интерфейса
         # Текст
@@ -644,7 +651,7 @@ class Level(arcade.View):
         if arcade.get_sprites_at_point((world_x, world_y), self.platforms_list):
             self.ui_manager.enable()
             # Проверка на нахождение башни на платформе
-            if arcade.get_sprites_at_point((world_x, world_y), self.towers_list):
+            if arcade.get_sprites_at_point((world_x, world_y), self.towers_turrets_list):
                 # Открытие меню изменения башни
                 self.edit_tower_menu.visible = True
             else:

@@ -114,7 +114,29 @@ LEVELS = {
 
     "The last frontier": {
         "tilemap": "resources/levels/level5.tmx",
-        "waves": None,
+        "waves": (
+            (enemy.BasicEnemy for _ in range(6)),
+            (enemy.BasicEnemy for _ in range(8)),
+            (enemy.FastEnemy for _ in range(6)),
+            ([enemy.BasicEnemy for _ in range(6)] + [enemy.FastEnemy for _ in range(6)]),
+            (enemy.FastEnemy for _ in range(12)),
+            (enemy.BigEnemy for _ in range(4)),
+            ([enemy.BigEnemy for _ in range(4)] + [enemy.FastEnemy for _ in range(10)]),
+            ([enemy.BigEnemy for _ in range(4)] + [enemy.BasicEnemy for _ in range(10)]),
+            (enemy.BigEnemy for _ in range(8)),
+            (enemy.PushEnemy for _ in range(4)),
+            (enemy.PushEnemy for _ in range(6)),
+            ([enemy.BigEnemy for _ in range(6)] + [enemy.PushEnemy for _ in range(6)]),
+            ([enemy.BigEnemy for _ in range(10)] + [enemy.PushEnemy for _ in range(6)]),
+            (enemy.FastEnemy for _ in range(20)),
+            (enemy.BasicEnemy for _ in range(30)),
+            ([enemy.BasicEnemy for _ in range(20)] + [enemy.FastEnemy for _ in range(15)]),
+            (enemy.BigEnemy for _ in range(16)),
+            (enemy.PushEnemy for _ in range(8)),
+            (enemy.PushEnemy for _ in range(12)),
+            (enemy.PushEnemy for _ in range(16)),
+            ([enemy.BossEnemy] + [enemy.PushEnemy for _ in range(8)])
+        ),
         "wave_rate": 35.0,
         "difficulty": 1.5
     }
