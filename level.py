@@ -47,13 +47,13 @@ class TowerMenu(arcade.gui.UIWidget):
 
         # Кнопки для создания башен
         self.buttons_layout.left = self.header_text.left
-        self.buttons_layout.top = self.view.screen_height * 0.875
+        self.buttons_layout.top = self.header_text.bottom - 30
 
         # Главный виджет
         self.left = self.close_button.right - 1
         self.bottom = self.buttons_layout.bottom - 20
-        self.width = abs(self.view.screen_width - self.close_button.right)
-        self.height = abs(self.view.screen_height - self.buttons_layout.bottom) + 21
+        self.width = abs(self.view.screen_width - self.close_button.right) + 2
+        self.height = abs(self.view.screen_height - self.buttons_layout.bottom) + 20
 
     def close(self) -> None:
         """Закрытие меню"""
@@ -154,11 +154,9 @@ class EditTowerMenu(TowerMenu):
         def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
             # Получение родителей
             menu: EditTowerMenu = self.parent.parent
+            # Получение башни
+            editing_tower: tower.Tower = menu.editing_tower
 
-            # Поиск башни для улучшения
-            editing_tower: tower.Tower = arcade.get_sprites_at_point(
-                menu.view.selected_tile, menu.view.towers_turrets_list
-            )[0]
             # Проверка на возможность удаления
             if editing_tower.upgrade_price <= menu.view.player_money and editing_tower.upgrade_level < 5:
                 # Вычитание денег у игрока
@@ -167,20 +165,20 @@ class EditTowerMenu(TowerMenu):
                 # Улучшение башни
                 editing_tower.upgrade()
 
+                # Изменение информации о башне в виджетах
+                menu.update_tower_info()
+
     class DeleteTowerButton(arcade.gui.UIFlatButton):
         """Кнопка удаления башни"""
 
         def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
             # Получение родителей
             menu: EditTowerMenu = self.parent.parent
-
-            # Поиск башни для удаления
-            deleting_tower: tower.Tower = arcade.get_sprites_at_point(
-                menu.view.selected_tile, menu.view.towers_turrets_list
-            )[0]
+            # Получение башни
+            deleting_tower: tower.Tower = menu.editing_tower
 
             # Прибавление денег игроку
-            menu.view.player_money += int(deleting_tower.price * deleting_tower.upgrade_level * 0.6)
+            menu.view.player_money += deleting_tower.delete_price
             # Удаление башни
             deleting_tower.base.remove_from_sprite_lists()
             deleting_tower.remove_from_sprite_lists()
@@ -196,9 +194,51 @@ class EditTowerMenu(TowerMenu):
         # Привязка к уровню
         self.view: arcade.View = view
 
+        # Башня для изменения
+        self.editing_tower: tower.Tower | None = None
+
         # Заголовок
         self.header_text = arcade.gui.UILabel("Edit tower", font_name="CGXYZ LCD", font_size=12)
         self.add(self.header_text)
+
+        # Информация о башне
+        self.info_layout = arcade.gui.UIBoxLayout(vertical=True, space_between=10, width=200, height=160, align="left")
+        # Урон башни
+        self.damage_text = arcade.gui.UILabel(
+            f"Damage: None", font_name="CGXYZ LCD", font_size=7
+        )
+        self.info_layout.add(self.damage_text)
+        # Скорость атаки башни
+        self.fire_rate_text = arcade.gui.UILabel(
+            f"Speed: None", font_name="CGXYZ LCD", font_size=7
+        )
+        self.info_layout.add(self.fire_rate_text)
+        # Радиус атаки башни
+        self.radius_text = arcade.gui.UILabel(
+            f"Radius: None", font_name="CGXYZ LCD", font_size=7
+        )
+        self.info_layout.add(self.radius_text)
+        # Скорость пуль башни
+        self.bullet_speed_text = arcade.gui.UILabel(
+            f"Bullet speed: None", font_name="CGXYZ LCD", font_size=7
+        )
+        self.info_layout.add(self.bullet_speed_text)
+        # Уровень башни
+        self.level_text = arcade.gui.UILabel(
+            f"Level: None", font_name="CGXYZ LCD", font_size=7
+        )
+        self.info_layout.add(self.level_text)
+        # Цена улучшения башни
+        self.upgrade_price_text = arcade.gui.UILabel(
+            f"Upgrade $: None", font_name="CGXYZ LCD", font_size=7
+        )
+        self.info_layout.add(self.upgrade_price_text)
+        # Цена при удалении башни
+        self.delete_price_text = arcade.gui.UILabel(
+            f"Delete $: None", font_name="CGXYZ LCD", font_size=7
+        )
+        self.info_layout.add(self.delete_price_text)
+        self.add(self.info_layout)
 
         # Кнопка закрытия меню
         self.close_button = self.CloseButton(
@@ -240,6 +280,55 @@ class EditTowerMenu(TowerMenu):
 
         # Настройка координат виджетов под размер экрана
         self.match_window()
+
+    def update_tower_info(self) -> None:
+        """Изменение информации о башне в виджетах"""
+
+        self.damage_text.text = f"Damage: {round(self.editing_tower.damage)}"
+        self.fire_rate_text.text = f"Fire rate: {round(self.editing_tower.fire_rate, 2)}"
+        self.radius_text.text = f"Radius: {round(self.editing_tower.radius, 1)}"
+        self.bullet_speed_text.text = f"Bullet speed: {round(self.editing_tower.bullet_speed)}"
+        self.level_text.text = f"Level: {self.editing_tower.upgrade_level}"
+        self.upgrade_price_text.text = f"Upgrade $: {
+        round(self.editing_tower.upgrade_price) if self.editing_tower.upgrade_level < 5 else "Full"
+        }"
+        self.delete_price_text.text = f"Delete $: {round(self.editing_tower.delete_price)}"
+
+    def match_tower(self):
+        """Подстраивание меню под выбранную башню"""
+
+        # Нахождение выбранной башни
+        self.editing_tower = arcade.get_sprites_at_point(
+            self.view.selected_tile, self.view.towers_turrets_list
+        )[0]
+
+        # Изменение информации о башне в виджетах
+        self.update_tower_info()
+
+    def match_window(self) -> None:
+        """Настройка координат виджетов под размер экрана"""
+
+        # Заголовок
+        self.header_text.right = self.view.screen_width - 20
+        self.header_text.top = self.view.screen_height - 20
+
+        # Кнопка закрытия меню
+        self.close_button.right = self.header_text.left - 30
+        self.close_button.top = self.view.screen_height
+
+        # Текст для вывода информации
+        self.info_layout.left = self.header_text.left
+        self.info_layout.top = self.header_text.bottom - 30
+
+        # Кнопки для создания башен
+        self.buttons_layout.left = self.header_text.left
+        self.buttons_layout.top = self.info_layout.bottom - 30
+
+        # Главный виджет
+        self.left = self.close_button.right - 1
+        self.bottom = self.buttons_layout.bottom - 20
+        self.width = abs(self.view.screen_width - self.close_button.right) + 2
+        self.height = abs(self.view.screen_height - self.buttons_layout.bottom) + 20
 
 
 class ResultWidget(arcade.gui.UIWidget):
@@ -413,26 +502,31 @@ class Level(arcade.View):
         # Создание интерфейса:
         # Текст
         self.batch = Batch()
+        # Здоровье базы игрока
         self.health_text = arcade.Text(
             f"Health: {max(0, self.player_health)}",
             20, self.screen_height - 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
         )
+        # Деньги игрока
         self.money_text = arcade.Text(
-            f"Money: {max(0, self.player_health)}",
+            f"Money: {round(self.player_money)}",
             260, self.screen_height - 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
         )
+        # Номер волны
         self.wave_number_text = arcade.Text(
             f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}",
             20, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
+        # Время до новой волны
         self.time_left_text = arcade.Text(
             f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}",
             200, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
+        # Подсказка о пропуске волны
         self.skip_text = arcade.Text(
             f"SKIP",
             470, 20, arcade.color.WHITE,
@@ -522,7 +616,7 @@ class Level(arcade.View):
         # Обновление интерфейса
         # Текст
         self.health_text.text = f"Health: {max(0, self.player_health)}"
-        self.money_text.text = f"Money: {self.player_money}"
+        self.money_text.text = f"Money: {round(self.player_money)}"
         self.wave_number_text.text = f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}"
         self.time_left_text.text = f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}"
         self.skip_text.batch = self.batch if self.waves.can_skip_wave() else None
@@ -653,6 +747,7 @@ class Level(arcade.View):
             # Проверка на нахождение башни на платформе
             if arcade.get_sprites_at_point((world_x, world_y), self.towers_turrets_list):
                 # Открытие меню изменения башни
+                self.edit_tower_menu.match_tower()
                 self.edit_tower_menu.visible = True
             else:
                 # Открытие меню создания новой башни

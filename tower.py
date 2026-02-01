@@ -36,6 +36,7 @@ class Tower(arcade.Sprite):
         self.bullet_speed: int | float = TOWERS[tower_name]["bullet_speed"]
         self.price: int = TOWERS[tower_name]["price"]
         self.upgrade_price: int = self.price * 0.5
+        self.delete_price: int = self.price * 0.75
 
         # Текущий уровень улучшения
         self.upgrade_level: int = 1
@@ -123,8 +124,12 @@ class Tower(arcade.Sprite):
             self.radius *= 1.1
             self.attack_range.scale = self.radius * TOWER_SCALING
 
+
+            # Повышение цены удаления
+            self.delete_price += self.upgrade_price * 0.75
             # Повышение целы улучшения
             self.upgrade_price *= 1.4
+
             # Прибавление уровня
             self.upgrade_level += 1
 
