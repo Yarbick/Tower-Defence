@@ -13,6 +13,7 @@ TOWER_SCALING = 2.0
 
 class Tower(arcade.Sprite):
     """Макет башни"""
+
     def __init__(self, tower_name: str, center_x: int | float, center_y: int | float, view: arcade.View):
         super().__init__(center_x=center_x, center_y=center_y, scale=TOWER_SCALING)
 
@@ -28,6 +29,10 @@ class Tower(arcade.Sprite):
             "resources/assets/images/towers/attack_range.png"
         )
         self.texture = self.turret_texture
+
+        # Загрузка звуков
+        self.shot_sound: arcade.Sound = arcade.load_sound(TOWERS[tower_name]["shot_sound"])
+        self.money_sound: arcade.Sound = arcade.load_sound("resources/assets/sounds/money.wav")
 
         # Показатели башни
         self.damage: int | float = TOWERS[tower_name]["damage"]
@@ -81,7 +86,8 @@ class Tower(arcade.Sprite):
             self.curr_target = None
 
         # Поиск новой цели
-        targets = arcade.check_for_collision_with_list(self.attack_range, self.view.enemies_list)  # Цели в радиусе атаки башни
+        targets = arcade.check_for_collision_with_list(self.attack_range,
+                                                       self.view.enemies_list)  # Цели в радиусе атаки башни
         if self.curr_target is None and targets:
             # Выбор самой первой цели
             self.curr_target = max(
@@ -103,6 +109,9 @@ class Tower(arcade.Sprite):
         self.fire_timer += delta_time
         # Проверка на возможность выстрелить
         if self.curr_target and self.fire_timer >= self.fire_rate:
+            # Воспроизведение звука
+            self.shot_sound.play()
+
             # Создание пули
             self.view.bullets_list.append(self.bullet(
                 self.center_x, self.center_y, self.angle, self.bullet_texture,
@@ -112,18 +121,20 @@ class Tower(arcade.Sprite):
             # Сброс таймера
             self.fire_timer = 0.0
 
-    def upgrade(self):
+    def upgrade(self) -> None:
         """Улучшение башни"""
 
         # Проверка на лимит уровней
         if self.upgrade_level < 5:
+            # Воспроизведение звука
+            self.money_sound.play()
+
             # Улучшение показателей
             self.damage *= 1.2
             self.fire_rate *= 0.9
             self.bullet_speed *= 1.2
             self.radius *= 1.1
             self.attack_range.scale = self.radius * TOWER_SCALING
-
 
             # Повышение цены удаления
             self.delete_price += self.upgrade_price * 0.75
@@ -136,6 +147,18 @@ class Tower(arcade.Sprite):
             # Смена текстуры основания на максимальном уровне
             if self.upgrade_level == 5:
                 self.base.texture = self.base_max_texture
+
+    def delete(self) -> None:
+        """Удаление башни"""
+
+        # Воспроизведение звука
+        self.money_sound.play()
+
+        # Прибавление денег игроку
+        self.view.player_money += self.delete_price
+        # Удаление башни
+        self.base.remove_from_sprite_lists()
+        self.remove_from_sprite_lists()
 
 
 class BasicTower(Tower):

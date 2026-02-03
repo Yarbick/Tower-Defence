@@ -74,6 +74,8 @@ ENEMIES = {
         "dead_animation_textures": tuple(
             f"resources/assets/images/enemies/boss_enemy/2_phase/dead_animation/dead_{i}.png" for i in range(1, 8)
         ),
+        "boss_soundtrack": "resources/assets/sounds/soundtracks/level_5_boss.mp3",
+        "dead_sound": "resources/assets/sounds/boss_dead.wav",
         "health": 75000,
         "armor": 0.35,
         "speed": 25,

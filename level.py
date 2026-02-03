@@ -4,6 +4,8 @@ from inspect import getmembers
 import arcade
 import arcade.gui
 from pyglet.graphics import Batch
+# Звуки
+import pyglet.media
 # Бинды клавиатуры
 import controls
 # Игровые объекты
@@ -68,9 +70,9 @@ class AddTowerMenu(TowerMenu):
     class AddTowerButton(arcade.gui.UITextureButton):
         """Кнопка создания башни"""
 
-        def __init__(self, adding_tower: tower.Tower, *args, **kwargs):
+        def __init__(self, adding_tower, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self.adding_tower: tower.Tower = adding_tower
+            self.adding_tower = adding_tower
 
         def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
             # Получение родителей
@@ -78,7 +80,7 @@ class AddTowerMenu(TowerMenu):
 
             # Создание новой башни
             new_tower: tower.Tower = self.adding_tower(
-                menu.view.selected_tile[0], menu.view.selected_tile[1], menu.view
+                menu.adding_tower_position[0], menu.adding_tower_position[1], menu.view
             )
             # Проверка на достаточное количество денег
             if menu.view.player_money >= new_tower.price:
@@ -99,6 +101,9 @@ class AddTowerMenu(TowerMenu):
 
         # Привязка к уровню
         self.view: arcade.View = view
+
+        # Координаты для создания башни
+        self.adding_tower_position: tuple | None = None
 
         # Заголовок
         self.header_text = arcade.gui.UILabel("Create tower", font_name="CGXYZ LCD", font_size=12)
@@ -143,6 +148,12 @@ class AddTowerMenu(TowerMenu):
         # Настройка координат виджетов под размер экрана
         self.match_window()
 
+    def match_new_tower_position(self):
+        """Подстраивание под новый тайл"""
+
+        # Установка новых координат для создания новой башни
+        self.adding_tower_position = self.view.selected_tile
+
 
 class EditTowerMenu(TowerMenu):
     """Меню изменения башни"""
@@ -177,11 +188,8 @@ class EditTowerMenu(TowerMenu):
             # Получение башни
             deleting_tower: tower.Tower = menu.editing_tower
 
-            # Прибавление денег игроку
-            menu.view.player_money += deleting_tower.delete_price
             # Удаление башни
-            deleting_tower.base.remove_from_sprite_lists()
-            deleting_tower.remove_from_sprite_lists()
+            deleting_tower.delete()
 
             # Закрытие меню
             menu.close()
@@ -343,8 +351,10 @@ class ResultWidget(arcade.gui.UIWidget):
             level_view: arcade.View = self.parent.view
             window: arcade.Window = level_view.window
 
-            # Возвращение в главно меню
+            # Отключение процессов уровня
+            level_view.background_soundtrack.stop(level_view.background_soundtrack_player)
             level_view.ui_manager.disable()
+            # Возвращение в главно меню
             main_menu_view: arcade.View = level_view.parent.parent
             main_menu_view.setup()
             window.show_view(main_menu_view)
@@ -357,6 +367,12 @@ class ResultWidget(arcade.gui.UIWidget):
 
         # Привязка к уровню
         self.view: arcade.View = view
+
+        # Загрузка звуков
+        self.result_sound: arcade.Sound = arcade.load_sound(
+            "resources/assets/sounds/game_over/win.wav" if game_result
+            else "resources/assets/sounds/game_over/defeat.wav"
+        )
 
         # Заголовок
         self.header_text = arcade.gui.UILabel(
@@ -380,6 +396,9 @@ class ResultWidget(arcade.gui.UIWidget):
 
         # Настройка координат виджетов под размер экрана
         self.match_window()
+
+        # Воспроизведение звука
+        self.result_sound.play()
 
     def match_window(self) -> None:
         """Настройка координат виджетов под размер экрана"""
@@ -405,6 +424,11 @@ class Level(arcade.View):
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
         self.level_name = level_name
         self.parent: arcade.View = parent
+
+        # Загрузка саундтреков
+        self.background_soundtrack: arcade.Sound = arcade.load_sound(LEVELS[level_name]["background_soundtrack"])
+        if "boss_soundtrack" in LEVELS[level_name].keys():
+            self.boss_soundtrack: arcade.Sound = arcade.load_sound(LEVELS[level_name]["boss_soundtrack"])
 
         # Размеры окна
         self.screen_width: int | None = None
@@ -451,6 +475,9 @@ class Level(arcade.View):
         self.ui_manager: arcade.gui.UIManager | None = None
         # Выделенный тайл
         self.selected_tile: tuple | None = None
+
+        # Саундтреки
+        self.background_soundtrack_player: pyglet.media.Player | None = None
 
         # Нажатые клавиши
         self.keys_pressed: set | None = None
@@ -550,6 +577,10 @@ class Level(arcade.View):
 
         # Выделение выбранного тайла
         self.selected_tile = None
+
+        # Запуск саундтрека
+        self.background_soundtrack_player = pyglet.media.Player()
+        self.background_soundtrack_player = self.background_soundtrack.play(loop=True)
 
         # Обнуление клавиш
         self.keys_pressed = set()
@@ -652,12 +683,16 @@ class Level(arcade.View):
         world_x: float = ((self.world_camera.position[0] - self.screen_width * 0.5 + x) // TILE_SIZE + 0.5) * TILE_SIZE
         world_y: float = ((self.world_camera.position[1] - self.screen_height * 0.5 + y) // TILE_SIZE + 0.5) * TILE_SIZE
 
-        # Выделение клетки
-        self.selected_tile = world_x, world_y
+        # Проверка на клик по меню
+        if not (self.is_widget_clicked(self.add_tower_menu, x, y) or
+                self.is_widget_clicked(self.edit_tower_menu, x, y)):
+            # Выделение клетки
+            self.selected_tile = world_x, world_y
 
-        # Изменение башен
-        if key == arcade.MOUSE_BUTTON_LEFT:
-            self.edit_tower(world_x, world_y)
+            # Изменение башен
+            if key == arcade.MOUSE_BUTTON_LEFT:
+                # Открытие/закрытие меню
+                self.tower_menus_open(world_x, world_y)
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         self.keys_pressed.add(key)
@@ -733,17 +768,20 @@ class Level(arcade.View):
 
         return enemies_way
 
-    def edit_tower(self, world_x: int, world_y: int) -> None:
-        """Создание и изменение башен"""
+    def is_widget_clicked(self, widget: arcade.gui.widgets, x: int | float, y: int | float) -> bool:
+        """Проверка на клик по виджету"""
+
+        return widget.visible and widget.left <= x <= widget.right and widget.bottom <= y <= widget.top
+
+    def tower_menus_open(self, world_x: int, world_y: int) -> None:
+        """Открытие меню для создания и изменения башен"""
 
         # Закрытие всех меню
         self.add_tower_menu.visible = False
         self.edit_tower_menu.visible = False
-        self.ui_manager.disable()
 
         # Проверка на клик по платформе
         if arcade.get_sprites_at_point((world_x, world_y), self.platforms_list):
-            self.ui_manager.enable()
             # Проверка на нахождение башни на платформе
             if arcade.get_sprites_at_point((world_x, world_y), self.towers_turrets_list):
                 # Открытие меню изменения башни
@@ -751,6 +789,7 @@ class Level(arcade.View):
                 self.edit_tower_menu.visible = True
             else:
                 # Открытие меню создания новой башни
+                self.add_tower_menu.match_new_tower_position()
                 self.add_tower_menu.visible = True
 
     def check_game_status(self):

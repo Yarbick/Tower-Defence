@@ -2,8 +2,6 @@
 from random import choices, choice, sample
 # Графика
 import arcade
-from pyglet.resource import texture
-
 # Игровые объекты
 import tower
 # Прототипы
@@ -30,6 +28,9 @@ class Enemy(arcade.Sprite):
             for i in range(len(ENEMIES[enemy_name]["dead_animation_textures"]))
         )
         self.texture = self.idle_texture
+
+        # Загрузка звуков
+        self.hit: arcade.Sound = arcade.load_sound("resources/assets/sounds/hit.wav")
 
         # Показатели врага
         self.health: int = ENEMIES[enemy_name]["health"] * difficulty
@@ -99,6 +100,9 @@ class Enemy(arcade.Sprite):
             self.curr_part += 1
             # Смерть при завершении пути
             if self.curr_part >= len(self.way):
+                # Воспроизведение звука
+                self.hit.play()
+
                 # Нанесение урона базе
                 self.view.player_health -= self.damage
                 # Вычитание стоимости врага от денег игрока
@@ -245,6 +249,10 @@ class BossEnemy(Enemy):
         self.rocket_texture: arcade.Texture = arcade.load_texture(ENEMIES[self.prototype_name]["rocket_texture"])
         self.idle_texture = self.idle_texture_1_phase
 
+        # Загрузка звуков
+        self.boss_soundtrack: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["boss_soundtrack"])
+        self.dead_sound: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["dead_sound"])
+
         # Показатели призывной атаки
         self.spawn_attack_rate: int | float = ENEMIES[self.prototype_name]["spawn_attack_rate"]
         self.spawn_queue: list[Enemy] = []
@@ -271,6 +279,10 @@ class BossEnemy(Enemy):
         # Атаки
         arcade.schedule(self.start_spawn_enemies, self.spawn_attack_rate)
         arcade.schedule(self.spawn_rockets, self.rocket_attack_rate)
+
+        # Саундтрек
+        self.view.background_soundtrack.stop(self.view.background_soundtrack_player)
+        self.view.background_soundtrack_player = self.boss_soundtrack.play(loop=True)
 
     def update(self, delta_time: float = 1 / 60) -> None:
         super().update()
@@ -377,9 +389,9 @@ class BossEnemy(Enemy):
 
         super().dead()
 
+        # Воспроизведение звуков
+        self.dead_sound.play()
+
         # Снятие всех авто вызовов
         arcade.unschedule(self.start_spawn_enemies)
         arcade.unschedule(self.spawn_rockets)
-
-
-# ДОДЕЛАТЬ ВТОРУЮ ФАЗУ

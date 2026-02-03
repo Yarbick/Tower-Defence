@@ -1,11 +1,16 @@
 # Графика
 import arcade
+# Звуки
+import pyglet.media
 
 
 class Waves:
     def __init__(self, waves: tuple, wave_rate: float, enemy_way: list, difficulty: float, view: arcade.View):
         # Привязка к уровню
         self.view: arcade.View = view
+
+        # Загрузка звуков
+        self.wave_appear: arcade.Sound = arcade.load_sound("resources/assets/sounds/wave_appear.wav")
 
         # Список волн
         self.waves: list = [list(wave) for wave in waves]
@@ -59,6 +64,9 @@ class Waves:
         """Вызов волны"""
 
         if self.wave_timer >= self.wave_rate or self.skipping:
+            # Воспроизведение звука
+            self.wave_appear.play()
+
             # Добавление врагов в очередь
             self.enemy_queue.extend(self.waves.pop(0))
             # Повышение сложности

@@ -2,6 +2,8 @@
 import arcade
 import arcade.gui
 from arcade.gui.widgets.buttons import UIFlatButtonStyle
+# Звуки
+import pyglet.media
 # Меню уровней
 from levels_menu import LevelsMenu
 
@@ -20,8 +22,10 @@ class PlayButton(arcade.gui.UIFlatButton):
         window: arcade.Window = ui_manager.window
         main_menu_view = window.current_view
 
-        # Переключаемся на меню уровней
+        # Отключение процессов главного меню
+        main_menu_view.background_soundtrack.stop(main_menu_view.background_soundtrack_player)
         ui_manager.disable()
+        # Переключение на меню уровней
         levels_menu_view: arcade.View = LevelsMenu(main_menu_view)
         levels_menu_view.setup()
         window.show_view(levels_menu_view)
@@ -45,7 +49,11 @@ class MainMenu(arcade.View):
         # Загружаем шрифты
         arcade.load_font("resources/assets/fonts/CGXYZLCD/CGXYZLCD-Regular.otf")
         # Загружаем текстуры
-        self.logo_texture = arcade.load_texture("resources/assets/images/logo/logo_text.png")
+        self.logo_texture: arcade.Texture = arcade.load_texture("resources/assets/images/logo/logo_text.png")
+        # Загружаем саундтреки
+        self.background_soundtrack: arcade.Sound = arcade.load_sound(
+            "resources/assets/sounds/soundtracks/main_menu.mp3"
+        )
 
         # Размер окна
         self.screen_width: int | None = None
@@ -64,6 +72,9 @@ class MainMenu(arcade.View):
 
         # Менеджер интерфейса
         self.ui_manager: arcade.gui.UIManager | None = None
+
+        # Саундтреки
+        self.background_soundtrack_player: pyglet.media.Player | None = None
 
     def setup(self) -> None:
         # Получение размеров окна
@@ -105,6 +116,10 @@ class MainMenu(arcade.View):
         self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.screen_width * 0.5, self.screen_height * 0.5
         self.world_camera.move_direction = 1  # Аттрибут камеры для направления движения
+
+        # Запуск саундтрека
+        self.background_soundtrack_player = pyglet.media.Player()
+        self.background_soundtrack_player = self.background_soundtrack.play(loop=True)
 
     def on_draw(self) -> None:
         self.clear()
