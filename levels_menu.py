@@ -6,46 +6,49 @@ from pyglet.graphics import Batch
 from level import Level
 # Прототипы
 from resources.prototypes.levels import LEVELS
-
-
-# Кнопки
-class BackButton(arcade.gui.UIFlatButton):
-    """Кнопка Back"""
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-        # Получение родителей
-        ui_manager: arcade.gui.UIManager = self.parent
-        window: arcade.Window = ui_manager.window
-        levels_menu: arcade.View = window.current_view
-
-        # Возвращение в главное меню
-        ui_manager.disable()
-        main_menu_view: arcade.View = levels_menu.parent
-        main_menu_view.setup()
-        window.show_view(main_menu_view)
-
-
-class LevelButton(arcade.gui.UIFlatButton):
-    """Кнопка переключения на уровень"""
-    def __init__(self, level_name: str, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.level_name: str = level_name
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-        # Получение родителей
-        ui_manager: arcade.gui.UIManager = self.parent.parent
-        window: arcade.Window = ui_manager.window
-        levels_menu: arcade.View = window.current_view
-
-        # Переключение на уровень
-        ui_manager.disable()
-        level_view: arcade.View = Level(self.level_name, levels_menu)
-        level_view.setup()
-        window.show_view(level_view)
+# Стили
+import styles
 
 
 class LevelsMenu(arcade.View):
     """Меню выбора уровня"""
+
+    # Виджеты
+    class BackButton(arcade.gui.UIFlatButton):
+        """Кнопка Back"""
+
+        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+            # Получение родителей
+            window: arcade.Window = arcade.get_window()
+            levels_menu_view: arcade.View = window.current_view
+
+            # Отключение процессов меню уровней
+            levels_menu_view.ui_manager.disable()
+
+            # Возвращение в главное меню
+            main_menu_view: arcade.View = levels_menu_view.parent
+            main_menu_view.setup()
+            window.show_view(main_menu_view)
+
+    class LevelButton(arcade.gui.UIFlatButton):
+        """Кнопка переключения на уровень"""
+
+        def __init__(self, level_name: str, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.level_name: str = level_name
+
+        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+            # Получение родителей
+            window: arcade.Window = arcade.get_window()
+            levels_menu_view: arcade.View = window.current_view
+
+            # Отключение процессов меню уровней
+            levels_menu_view.ui_manager.disable()
+
+            # Переключение на уровень
+            level_view: arcade.View = Level(self.level_name, levels_menu_view)
+            level_view.setup()
+            window.show_view(level_view)
 
     def __init__(self, parent: arcade.View):
         super().__init__()
@@ -86,17 +89,10 @@ class LevelsMenu(arcade.View):
         self.ui_manager = arcade.gui.UIManager()
         self.ui_manager._pixelated = True
         self.ui_manager.enable()
-        # Общий стиль кнопок
-        button_style = {
-            "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(60, 60, 60)),
-            "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(80, 80, 80)),
-            "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(100, 100, 100)),
-            "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=16, bg=(160, 160, 160))
-        }
         # Кнопка Back
-        self.back_button = BackButton(
+        self.back_button = self.BackButton(
             x=self.screen_width - 133, y=self.screen_height - 70,
-            width=128, height=64, text="BACK", style=button_style
+            width=128, height=64, text="BACK", style=styles.uiflatbutton_basic
         )
         self.ui_manager.add(self.back_button)
         # Layout для кнопок уровней
@@ -106,9 +102,9 @@ class LevelsMenu(arcade.View):
         )
         # Добавление кнопок
         for level_name in LEVELS:
-            level_button = LevelButton(
+            level_button = self.LevelButton(
                 level_name,
-                width=self.screen_width - self.levels_layout.left * 2, text=level_name, style=button_style
+                width=self.screen_width - self.levels_layout.left * 2, text=level_name, style=styles.uiflatbutton_basic
             )
             self.levels_layout.add(level_button)
         self.ui_manager.add(self.levels_layout)

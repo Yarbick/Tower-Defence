@@ -8,6 +8,10 @@ from pyglet.graphics import Batch
 import pyglet.media
 # Бинды клавиатуры
 import controls
+# Стили
+import styles
+# Сцены
+from pause_menu import PauseMenu
 # Игровые объекты
 import tower
 import enemy
@@ -23,406 +27,379 @@ CAMERA_SPEED = 300
 CAMERA_SPEED_BOOST = 2.0
 
 
-class TowerMenu(arcade.gui.UIWidget):
-    """Макет меню башен"""
+class Level(arcade.View):
+    """Уровень"""
 
-    # Кнопки
-    class CloseButton(arcade.gui.UIFlatButton):
-        """Кнопка закрытия меню"""
+    # Виджеты
+    class TowerMenu(arcade.gui.UIWidget):
+        """Макет меню башен"""
 
-        def on_click(self, event: arcade.gui.UIOnClickEvent):
-            # Закрытие меню
-            menu: TowerMenu = self.parent
-            menu.close()
+        # Кнопки
+        class CloseButton(arcade.gui.UIFlatButton):
+            """Кнопка закрытия меню"""
 
-    # Методы
-    def match_window(self) -> None:
-        """Настройка координат виджетов под размер экрана"""
+            def on_click(self, event: arcade.gui.UIOnClickEvent):
+                # Закрытие меню
+                menu: TowerMenu = self.parent
+                menu.close()
 
-        # Заголовок
-        self.header_text.right = self.view.screen_width - 20
-        self.header_text.top = self.view.screen_height - 20
+        # Методы
+        def match_window(self) -> None:
+            """Настройка координат виджетов под размер экрана"""
 
-        # Кнопка закрытия меню
-        self.close_button.right = self.header_text.left - 30
-        self.close_button.top = self.view.screen_height
+            # Заголовок
+            self.header_text.right = self.view.screen_width - 20
+            self.header_text.top = self.view.screen_height - 20
 
-        # Кнопки для создания башен
-        self.buttons_layout.left = self.header_text.left
-        self.buttons_layout.top = self.header_text.bottom - 30
+            # Кнопка закрытия меню
+            self.close_button.right = self.header_text.left - 30
+            self.close_button.top = self.view.screen_height
 
-        # Главный виджет
-        self.left = self.close_button.right - 1
-        self.bottom = self.buttons_layout.bottom - 20
-        self.width = abs(self.view.screen_width - self.close_button.right) + 2
-        self.height = abs(self.view.screen_height - self.buttons_layout.bottom) + 20
+            # Кнопки для создания башен
+            self.buttons_layout.left = self.header_text.left
+            self.buttons_layout.top = self.header_text.bottom - 30
 
-    def close(self) -> None:
-        """Закрытие меню"""
+            # Главный виджет
+            self.left = self.close_button.right - 1
+            self.bottom = self.buttons_layout.bottom - 20
+            self.width = abs(self.view.screen_width - self.close_button.right) + 2
+            self.height = abs(self.view.screen_height - self.buttons_layout.bottom) + 20
 
-        self.visible = False
+        def close(self) -> None:
+            """Закрытие меню"""
 
+            self.visible = False
 
-class AddTowerMenu(TowerMenu):
-    """Меню создания новой башни"""
+    class AddTowerMenu(TowerMenu):
+        """Меню создания новой башни"""
 
-    # Кнопки
-    class AddTowerButton(arcade.gui.UITextureButton):
-        """Кнопка создания башни"""
+        # Кнопки
+        class AddTowerButton(arcade.gui.UITextureButton):
+            """Кнопка создания башни"""
 
-        def __init__(self, adding_tower, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.adding_tower = adding_tower
+            def __init__(self, adding_tower, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.adding_tower = adding_tower
 
-        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-            # Получение родителей
-            menu: AddTowerMenu = self.parent.parent
+            def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+                # Получение родителей
+                menu: AddTowerMenu = self.parent.parent
 
-            # Создание новой башни
-            new_tower: tower.Tower = self.adding_tower(
-                menu.adding_tower_position[0], menu.adding_tower_position[1], menu.view
+                # Создание новой башни
+                new_tower: tower.Tower = self.adding_tower(
+                    menu.adding_tower_position[0], menu.adding_tower_position[1], menu.view
+                )
+                # Проверка на достаточное количество денег
+                if menu.view.player_money >= new_tower.price:
+                    # Вычитание денег у игрока
+                    menu.view.player_money -= new_tower.price
+
+                    # Добавление башни
+                    menu.view.towers_bases_list.append(new_tower.base)
+                    menu.view.towers_turrets_list.append(new_tower)
+
+                    # Закрытие меню
+                    menu.close()
+
+        # Методы
+        def __init__(self, view: arcade.View):
+            super().__init__()
+            self.with_background(color=(40, 40, 40))
+
+            # Привязка к уровню
+            self.view: arcade.View = view
+
+            # Координаты для создания башни
+            self.adding_tower_position: tuple | None = None
+
+            # Заголовок
+            self.header_text = arcade.gui.UILabel("Create tower", font_name="CGXYZ LCD", font_size=12)
+            self.add(self.header_text)
+
+            # Кнопка закрытия меню
+            self.close_button = self.CloseButton(
+                width=50, height=50, text=">",
+                style=styles.uiflatbutton_close_tower_menu
             )
-            # Проверка на достаточное количество денег
-            if menu.view.player_money >= new_tower.price:
-                # Вычитание денег у игрока
-                menu.view.player_money -= new_tower.price
+            self.add(self.close_button)
 
-                # Добавление башни
-                menu.view.towers_bases_list.append(new_tower.base)
-                menu.view.towers_turrets_list.append(new_tower)
+            # Кнопки для создания башен
+            self.buttons_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=10, width=50, height=50)
+            self.add(self.buttons_layout)
+            for tower_name in TOWERS:
+                # Поиск класса башни по названию прототипа
+                tower_class: tower.Tower | None = None
+                for obj in getmembers(tower):
+                    try:
+                        if obj[1].prototype_name == tower_name:
+                            tower_class = obj[1]
+                            break
+                    except AttributeError:
+                        continue
+
+                # Создание кнопки
+                if tower_class:
+                    button = self.AddTowerButton(
+                        adding_tower=tower_class, width=50, height=50,
+                        texture=arcade.load_texture(f"resources/assets/images/towers/{tower_name}/base.png")
+                    )
+                    label = arcade.gui.UILabel(
+                        text=str(TOWERS[tower_name]["price"]), font_name="CGXYZ LCD", font_size=6
+                    )
+                    button.add(label)
+                    self.buttons_layout.add(button)
+
+            # Настройка координат виджетов под размер экрана
+            self.match_window()
+
+        def match_new_tower_position(self):
+            """Подстраивание под новый тайл"""
+
+            # Установка новых координат для создания новой башни
+            self.adding_tower_position = self.view.selected_tile
+
+    class EditTowerMenu(TowerMenu):
+        """Меню изменения башни"""
+
+        # Кнопки
+        class UpgradeTowerButton(arcade.gui.UIFlatButton):
+            """Кнопка улучшения башни"""
+
+            def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+                # Получение родителей
+                menu: EditTowerMenu = self.parent.parent
+                # Получение башни
+                editing_tower: tower.Tower = menu.editing_tower
+
+                # Проверка на возможность удаления
+                if editing_tower.upgrade_price <= menu.view.player_money and editing_tower.upgrade_level < 5:
+                    # Вычитание денег у игрока
+                    menu.view.player_money -= int(editing_tower.upgrade_price)
+
+                    # Улучшение башни
+                    editing_tower.upgrade()
+
+                    # Изменение информации о башне в виджетах
+                    menu.update_tower_info()
+
+        class DeleteTowerButton(arcade.gui.UIFlatButton):
+            """Кнопка удаления башни"""
+
+            def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+                # Получение родителей
+                menu: EditTowerMenu = self.parent.parent
+                # Получение башни
+                deleting_tower: tower.Tower = menu.editing_tower
+
+                # Удаление башни
+                deleting_tower.delete()
 
                 # Закрытие меню
                 menu.close()
 
-    # Методы
-    def __init__(self, view: arcade.View):
-        super().__init__()
-        self.with_background(color=(40, 40, 40))
+        # Методы
+        def __init__(self, view: arcade.View):
+            super().__init__()
+            self.with_background(color=(40, 40, 40))
 
-        # Привязка к уровню
-        self.view: arcade.View = view
+            # Привязка к уровню
+            self.view: arcade.View = view
 
-        # Координаты для создания башни
-        self.adding_tower_position: tuple | None = None
+            # Башня для изменения
+            self.editing_tower: tower.Tower | None = None
 
-        # Заголовок
-        self.header_text = arcade.gui.UILabel("Create tower", font_name="CGXYZ LCD", font_size=12)
-        self.add(self.header_text)
+            # Заголовок
+            self.header_text = arcade.gui.UILabel("Edit tower", font_name="CGXYZ LCD", font_size=12)
+            self.add(self.header_text)
 
-        # Кнопка закрытия меню
-        self.close_button = self.CloseButton(
-            width=50, height=50, text=">",
-            style={
-                "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(40, 40, 40)),
-                "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(60, 60, 60)),
-                "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(80, 80, 80)),
-                "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(160, 160, 160))
-            }
-        )
-        self.add(self.close_button)
+            # Информация о башне
+            self.info_layout = arcade.gui.UIBoxLayout(
+                vertical=True, space_between=10, width=200, height=160, align="left"
+            )
+            # Урон башни
+            self.damage_text = arcade.gui.UILabel(
+                f"Damage: None", font_name="CGXYZ LCD", font_size=7
+            )
+            self.info_layout.add(self.damage_text)
+            # Скорость атаки башни
+            self.fire_rate_text = arcade.gui.UILabel(
+                f"Speed: None", font_name="CGXYZ LCD", font_size=7
+            )
+            self.info_layout.add(self.fire_rate_text)
+            # Радиус атаки башни
+            self.radius_text = arcade.gui.UILabel(
+                f"Radius: None", font_name="CGXYZ LCD", font_size=7
+            )
+            self.info_layout.add(self.radius_text)
+            # Скорость пуль башни
+            self.bullet_speed_text = arcade.gui.UILabel(
+                f"Bullet speed: None", font_name="CGXYZ LCD", font_size=7
+            )
+            self.info_layout.add(self.bullet_speed_text)
+            # Уровень башни
+            self.level_text = arcade.gui.UILabel(
+                f"Level: None", font_name="CGXYZ LCD", font_size=7
+            )
+            self.info_layout.add(self.level_text)
+            # Цена улучшения башни
+            self.upgrade_price_text = arcade.gui.UILabel(
+                f"Upgrade $: None", font_name="CGXYZ LCD", font_size=7
+            )
+            self.info_layout.add(self.upgrade_price_text)
+            # Цена при удалении башни
+            self.delete_price_text = arcade.gui.UILabel(
+                f"Delete $: None", font_name="CGXYZ LCD", font_size=7
+            )
+            self.info_layout.add(self.delete_price_text)
+            self.add(self.info_layout)
 
-        # Кнопки для создания башен
-        self.buttons_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=10, width=50, height=50)
-        self.add(self.buttons_layout)
-        for tower_name in TOWERS:
-            # Поиск класса башни по названию прототипа
-            tower_class: tower.Tower | None = None
-            for obj in getmembers(tower):
-                try:
-                    if obj[1].prototype_name == tower_name:
-                        tower_class = obj[1]
-                        break
-                except AttributeError:
-                    continue
+            # Кнопка закрытия меню
+            self.close_button = self.CloseButton(
+                width=50, height=50, text=">", style=styles.uiflatbutton_close_tower_menu
+            )
+            self.add(self.close_button)
 
-            # Создание кнопки
-            if tower_class:
-                button = self.AddTowerButton(
-                    adding_tower=tower_class, width=50, height=50,
-                    texture=arcade.load_texture(f"resources/assets/images/towers/{tower_name}/base.png")
-                )
-                label = arcade.gui.UILabel(text=str(TOWERS[tower_name]["price"]), font_name="CGXYZ LCD", font_size=6)
-                button.add(label)
-                self.buttons_layout.add(button)
+            # Кнопки для изменения башен
+            self.buttons_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=10, width=50, height=50)
+            self.add(self.buttons_layout)
+            # Кнопка улучшения башни
+            upgrade_button = self.UpgradeTowerButton(
+                width=90, height=50, text="Upgrade", style=styles.uiflatbutton_tower_menu
+            )
+            self.buttons_layout.add(upgrade_button)
+            # Кнопка удаления башни
+            delete_button = self.DeleteTowerButton(
+                width=90, height=50, text="Delete", style=styles.uiflatbutton_tower_menu
+            )
+            self.buttons_layout.add(delete_button)
 
-        # Настройка координат виджетов под размер экрана
-        self.match_window()
+            # Настройка координат виджетов под размер экрана
+            self.match_window()
 
-    def match_new_tower_position(self):
-        """Подстраивание под новый тайл"""
+        def update_tower_info(self) -> None:
+            """Изменение информации о башне в виджетах"""
 
-        # Установка новых координат для создания новой башни
-        self.adding_tower_position = self.view.selected_tile
+            self.damage_text.text = f"Damage: {round(self.editing_tower.damage)}"
+            self.fire_rate_text.text = f"Fire rate: {round(self.editing_tower.fire_rate, 2)}"
+            self.radius_text.text = f"Radius: {round(self.editing_tower.radius, 1)}"
+            self.bullet_speed_text.text = f"Bullet speed: {round(self.editing_tower.bullet_speed)}"
+            self.level_text.text = f"Level: {self.editing_tower.upgrade_level}"
+            self.upgrade_price_text.text = f"Upgrade $: {
+            round(self.editing_tower.upgrade_price) if self.editing_tower.upgrade_level < 5 else "Full"
+            }"
+            self.delete_price_text.text = f"Delete $: {round(self.editing_tower.delete_price)}"
 
+        def match_tower(self):
+            """Подстраивание меню под выбранную башню"""
 
-class EditTowerMenu(TowerMenu):
-    """Меню изменения башни"""
+            # Нахождение выбранной башни
+            self.editing_tower = arcade.get_sprites_at_point(
+                self.view.selected_tile, self.view.towers_turrets_list
+            )[0]
 
-    # Кнопки
-    class UpgradeTowerButton(arcade.gui.UIFlatButton):
-        """Кнопка улучшения башни"""
+            # Изменение информации о башне в виджетах
+            self.update_tower_info()
 
-        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-            # Получение родителей
-            menu: EditTowerMenu = self.parent.parent
-            # Получение башни
-            editing_tower: tower.Tower = menu.editing_tower
+        def match_window(self) -> None:
+            """Настройка координат виджетов под размер экрана"""
 
-            # Проверка на возможность удаления
-            if editing_tower.upgrade_price <= menu.view.player_money and editing_tower.upgrade_level < 5:
-                # Вычитание денег у игрока
-                menu.view.player_money -= int(editing_tower.upgrade_price)
+            # Заголовок
+            self.header_text.right = self.view.screen_width - 20
+            self.header_text.top = self.view.screen_height - 20
 
-                # Улучшение башни
-                editing_tower.upgrade()
+            # Кнопка закрытия меню
+            self.close_button.right = self.header_text.left - 30
+            self.close_button.top = self.view.screen_height
 
-                # Изменение информации о башне в виджетах
-                menu.update_tower_info()
+            # Текст для вывода информации
+            self.info_layout.left = self.header_text.left
+            self.info_layout.top = self.header_text.bottom - 30
 
-    class DeleteTowerButton(arcade.gui.UIFlatButton):
-        """Кнопка удаления башни"""
+            # Кнопки для создания башен
+            self.buttons_layout.left = self.header_text.left
+            self.buttons_layout.top = self.info_layout.bottom - 30
 
-        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-            # Получение родителей
-            menu: EditTowerMenu = self.parent.parent
-            # Получение башни
-            deleting_tower: tower.Tower = menu.editing_tower
+            # Главный виджет
+            self.left = self.close_button.right - 1
+            self.bottom = self.buttons_layout.bottom - 20
+            self.width = abs(self.view.screen_width - self.close_button.right) + 2
+            self.height = abs(self.view.screen_height - self.buttons_layout.bottom) + 20
 
-            # Удаление башни
-            deleting_tower.delete()
+    class ResultWidget(arcade.gui.UIWidget):
+        """Окно с выводом результатов игры"""
 
-            # Закрытие меню
-            menu.close()
+        # Кнопки
+        class ReturnToMenuButton(arcade.gui.UIFlatButton):
+            """Кнопка возвращения в главное меню"""
 
-    # Методы
-    def __init__(self, view: arcade.View):
-        super().__init__()
-        self.with_background(color=(40, 40, 40))
+            def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+                # Получение родителей
+                level_view: arcade.View = self.parent.view
+                window: arcade.Window = arcade.get_window()
 
-        # Привязка к уровню
-        self.view: arcade.View = view
+                # Отключение процессов уровня
+                level_view.background_soundtrack.stop(level_view.background_soundtrack_player)
+                level_view.ui_manager.disable()
 
-        # Башня для изменения
-        self.editing_tower: tower.Tower | None = None
+                # Возвращение в главно меню
+                main_menu_view: arcade.View = level_view.parent.parent
+                main_menu_view.setup()
+                window.show_view(main_menu_view)
 
-        # Заголовок
-        self.header_text = arcade.gui.UILabel("Edit tower", font_name="CGXYZ LCD", font_size=12)
-        self.add(self.header_text)
+        # Методы
+        def __init__(self, view: arcade.View, game_result: bool):
+            super().__init__()
+            self.with_background(color=(40, 40, 40))
+            self.size = 500, 300
 
-        # Информация о башне
-        self.info_layout = arcade.gui.UIBoxLayout(vertical=True, space_between=10, width=200, height=160, align="left")
-        # Урон башни
-        self.damage_text = arcade.gui.UILabel(
-            f"Damage: None", font_name="CGXYZ LCD", font_size=7
-        )
-        self.info_layout.add(self.damage_text)
-        # Скорость атаки башни
-        self.fire_rate_text = arcade.gui.UILabel(
-            f"Speed: None", font_name="CGXYZ LCD", font_size=7
-        )
-        self.info_layout.add(self.fire_rate_text)
-        # Радиус атаки башни
-        self.radius_text = arcade.gui.UILabel(
-            f"Radius: None", font_name="CGXYZ LCD", font_size=7
-        )
-        self.info_layout.add(self.radius_text)
-        # Скорость пуль башни
-        self.bullet_speed_text = arcade.gui.UILabel(
-            f"Bullet speed: None", font_name="CGXYZ LCD", font_size=7
-        )
-        self.info_layout.add(self.bullet_speed_text)
-        # Уровень башни
-        self.level_text = arcade.gui.UILabel(
-            f"Level: None", font_name="CGXYZ LCD", font_size=7
-        )
-        self.info_layout.add(self.level_text)
-        # Цена улучшения башни
-        self.upgrade_price_text = arcade.gui.UILabel(
-            f"Upgrade $: None", font_name="CGXYZ LCD", font_size=7
-        )
-        self.info_layout.add(self.upgrade_price_text)
-        # Цена при удалении башни
-        self.delete_price_text = arcade.gui.UILabel(
-            f"Delete $: None", font_name="CGXYZ LCD", font_size=7
-        )
-        self.info_layout.add(self.delete_price_text)
-        self.add(self.info_layout)
+            # Привязка к уровню
+            self.view: arcade.View = view
 
-        # Кнопка закрытия меню
-        self.close_button = self.CloseButton(
-            width=50, height=50, text=">",
-            style={
-                "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(40, 40, 40)),
-                "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(60, 60, 60)),
-                "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(80, 80, 80)),
-                "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=25, bg=(160, 160, 160))
-            }
-        )
-        self.add(self.close_button)
+            # Загрузка звуков
+            self.result_sound: arcade.Sound = arcade.load_sound(
+                "resources/assets/sounds/game_over/win.wav" if game_result
+                else "resources/assets/sounds/game_over/defeat.wav"
+            )
 
-        # Кнопки для изменения башен
-        self.buttons_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=10, width=50, height=50)
-        self.add(self.buttons_layout)
-        # Кнопка улучшения башни
-        upgrade_button = self.UpgradeTowerButton(
-            width=90, height=50, text="Upgrade",
-            style={
-                "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(60, 60, 60)),
-                "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(80, 80, 80)),
-                "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(100, 100, 100)),
-                "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(160, 160, 160))
-            }
-        )
-        self.buttons_layout.add(upgrade_button)
-        # Кнопка удаления башни
-        delete_button = self.DeleteTowerButton(
-            width=90, height=50, text="Delete",
-            style={
-                "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(60, 60, 60)),
-                "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(80, 80, 80)),
-                "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(100, 100, 100)),
-                "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=7, bg=(160, 160, 160))
-            }
-        )
-        self.buttons_layout.add(delete_button)
+            # Заголовок
+            self.header_text = arcade.gui.UILabel(
+                text="VICTORY" if game_result else "DEFEAT",
+                text_color=arcade.color.GREEN if game_result else arcade.color.RED,
+                font_name="CGXYZ LCD", font_size=20
+            )
+            self.add(self.header_text)
 
-        # Настройка координат виджетов под размер экрана
-        self.match_window()
+            # Кнопка возвращения в главное меню
+            self.return_to_main_menu_button = self.ReturnToMenuButton(
+                width=300, height=50, text="Main Menu", style=styles.uiflatbutton_basic
+            )
+            self.add(self.return_to_main_menu_button)
 
-    def update_tower_info(self) -> None:
-        """Изменение информации о башне в виджетах"""
+            # Настройка координат виджетов под размер экрана
+            self.match_window()
 
-        self.damage_text.text = f"Damage: {round(self.editing_tower.damage)}"
-        self.fire_rate_text.text = f"Fire rate: {round(self.editing_tower.fire_rate, 2)}"
-        self.radius_text.text = f"Radius: {round(self.editing_tower.radius, 1)}"
-        self.bullet_speed_text.text = f"Bullet speed: {round(self.editing_tower.bullet_speed)}"
-        self.level_text.text = f"Level: {self.editing_tower.upgrade_level}"
-        self.upgrade_price_text.text = f"Upgrade $: {
-        round(self.editing_tower.upgrade_price) if self.editing_tower.upgrade_level < 5 else "Full"
-        }"
-        self.delete_price_text.text = f"Delete $: {round(self.editing_tower.delete_price)}"
+            # Воспроизведение звука
+            self.result_sound.play()
 
-    def match_tower(self):
-        """Подстраивание меню под выбранную башню"""
+        def match_window(self) -> None:
+            """Настройка координат виджетов под размер экрана"""
 
-        # Нахождение выбранной башни
-        self.editing_tower = arcade.get_sprites_at_point(
-            self.view.selected_tile, self.view.towers_turrets_list
-        )[0]
+            # Заголовок
+            self.header_text.center_x = self.view.screen_width * 0.5
+            self.header_text.center_y = self.view.screen_height * 0.5 + self.height * 0.25
 
-        # Изменение информации о башне в виджетах
-        self.update_tower_info()
+            # Кнопка возвращения в главное меню
+            self.return_to_main_menu_button.center_x = self.view.screen_width * 0.5
+            self.return_to_main_menu_button.center_y = self.view.screen_height * 0.5 - self.height * 0.25
 
-    def match_window(self) -> None:
-        """Настройка координат виджетов под размер экрана"""
-
-        # Заголовок
-        self.header_text.right = self.view.screen_width - 20
-        self.header_text.top = self.view.screen_height - 20
-
-        # Кнопка закрытия меню
-        self.close_button.right = self.header_text.left - 30
-        self.close_button.top = self.view.screen_height
-
-        # Текст для вывода информации
-        self.info_layout.left = self.header_text.left
-        self.info_layout.top = self.header_text.bottom - 30
-
-        # Кнопки для создания башен
-        self.buttons_layout.left = self.header_text.left
-        self.buttons_layout.top = self.info_layout.bottom - 30
-
-        # Главный виджет
-        self.left = self.close_button.right - 1
-        self.bottom = self.buttons_layout.bottom - 20
-        self.width = abs(self.view.screen_width - self.close_button.right) + 2
-        self.height = abs(self.view.screen_height - self.buttons_layout.bottom) + 20
-
-
-class ResultWidget(arcade.gui.UIWidget):
-    """Окно с выводом результатов игры"""
-
-    # Кнопки
-    class ReturnToMenuButton(arcade.gui.UIFlatButton):
-        """Кнопка возвращения в главное меню"""
-
-        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-            # Получение родителей
-            level_view: arcade.View = self.parent.view
-            window: arcade.Window = level_view.window
-
-            # Отключение процессов уровня
-            level_view.background_soundtrack.stop(level_view.background_soundtrack_player)
-            level_view.ui_manager.disable()
-            # Возвращение в главно меню
-            main_menu_view: arcade.View = level_view.parent.parent
-            main_menu_view.setup()
-            window.show_view(main_menu_view)
-
-    # Методы
-    def __init__(self, view: arcade.View, game_result: bool):
-        super().__init__()
-        self.with_background(color=(40, 40, 40))
-        self.size = 500, 300
-
-        # Привязка к уровню
-        self.view: arcade.View = view
-
-        # Загрузка звуков
-        self.result_sound: arcade.Sound = arcade.load_sound(
-            "resources/assets/sounds/game_over/win.wav" if game_result
-            else "resources/assets/sounds/game_over/defeat.wav"
-        )
-
-        # Заголовок
-        self.header_text = arcade.gui.UILabel(
-            text="VICTORY" if game_result else "DEFEAT",
-            text_color=arcade.color.GREEN if game_result else arcade.color.RED,
-            font_name="CGXYZ LCD", font_size=20
-        )
-        self.add(self.header_text)
-
-        # Кнопка возвращения в главное меню
-        self.return_to_menu_button = self.ReturnToMenuButton(
-            width=300, height=50, text="Return to Menu",
-            style={
-                "normal": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(60, 60, 60)),
-                "hover": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(80, 80, 80)),
-                "press": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(100, 100, 100)),
-                "disabled": arcade.gui.UIFlatButton.UIStyle(font_name="CGXYZ LCD", font_size=12, bg=(160, 160, 160))
-            }
-        )
-        self.add(self.return_to_menu_button)
-
-        # Настройка координат виджетов под размер экрана
-        self.match_window()
-
-        # Воспроизведение звука
-        self.result_sound.play()
-
-    def match_window(self) -> None:
-        """Настройка координат виджетов под размер экрана"""
-
-        # Заголовок
-        self.header_text.center_x = self.view.screen_width * 0.5
-        self.header_text.center_y = self.view.screen_height * 0.5 + self.height * 0.25
-
-        # Кнопка возвращения в главное меню
-        self.return_to_menu_button.center_x = self.view.screen_width * 0.5
-        self.return_to_menu_button.center_y = self.view.screen_height * 0.5 - self.height * 0.25
-
-        # Главный виджет
-        self.center_x = self.view.screen_width * 0.5
-        self.center_y = self.view.screen_height * 0.5
-
-
-class Level(arcade.View):
-    """Уровень"""
+            # Главный виджет
+            self.center_x = self.view.screen_width * 0.5
+            self.center_y = self.view.screen_height * 0.5
 
     def __init__(self, level_name: str, parent: arcade.View):
         super().__init__()
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
-        self.level_name = level_name
+        self.level_name: str = level_name
         self.parent: arcade.View = parent
 
         # Загрузка саундтреков
@@ -565,11 +542,11 @@ class Level(arcade.View):
         self.ui_manager._pixelated = True
         self.ui_manager.enable()
         # Меню создания башен
-        self.add_tower_menu = AddTowerMenu(self)
+        self.add_tower_menu = self.AddTowerMenu(self)
         self.add_tower_menu.visible = False
         self.ui_manager.add(self.add_tower_menu)
         # Меню изменения башен
-        self.edit_tower_menu = EditTowerMenu(self)
+        self.edit_tower_menu = self.EditTowerMenu(self)
         self.edit_tower_menu.visible = False
         self.ui_manager.add(self.edit_tower_menu)
         # Окно с выводом результатов игры
@@ -695,6 +672,19 @@ class Level(arcade.View):
                 self.tower_menus_open(world_x, world_y)
 
     def on_key_press(self, key: int, modifiers: int) -> None:
+        # Пауза
+        if key == controls.pause:
+            window: arcade.Window = arcade.get_window()
+
+            # Отключение процессов уровня
+            self.ui_manager.disable()
+            self.background_soundtrack_player.pause()
+
+            # Переключение на меню паузы
+            pause_menu_view: arcade.View = PauseMenu(self)
+            pause_menu_view.setup()
+            window.show_view(pause_menu_view)
+
         self.keys_pressed.add(key)
 
     def on_key_release(self, key: int, modifiers: int) -> None:
@@ -802,5 +792,5 @@ class Level(arcade.View):
         else:
             return
         # Создание окна результатов игры
-        self.result_widget = ResultWidget(self, self.game_status)
+        self.result_widget = self.ResultWidget(self, self.game_status)
         self.ui_manager.add(self.result_widget)

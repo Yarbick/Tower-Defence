@@ -1,11 +1,12 @@
 # Графика
 import arcade
 import arcade.gui
-from arcade.gui.widgets.buttons import UIFlatButtonStyle
 # Звуки
 import pyglet.media
 # Меню уровней
 from levels_menu import LevelsMenu
+# Стили
+import styles
 
 # Константы
 TILEMAP_SCALING = 2.0
@@ -13,34 +14,36 @@ TILE_SIZE = 32 * TILEMAP_SCALING
 BACKGROUND_SPEED = 100
 
 
-class PlayButton(arcade.gui.UIFlatButton):
-    """Кнопка Play"""
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-        # Получение родителей
-        ui_manager: arcade.gui.UIManager = self.parent
-        window: arcade.Window = ui_manager.window
-        main_menu_view = window.current_view
-
-        # Отключение процессов главного меню
-        main_menu_view.background_soundtrack.stop(main_menu_view.background_soundtrack_player)
-        ui_manager.disable()
-        # Переключение на меню уровней
-        levels_menu_view: arcade.View = LevelsMenu(main_menu_view)
-        levels_menu_view.setup()
-        window.show_view(levels_menu_view)
-
-
-class ExitButton(arcade.gui.UIFlatButton):
-    """Кнопка Exit"""
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
-        # Закрываем окно
-        self.parent.window.close()
-
-
 class MainMenu(arcade.View):
     """Главное меню"""
+
+    # Виджеты
+    class PlayButton(arcade.gui.UIFlatButton):
+        """Кнопка Play"""
+
+        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+            # Получение родителей
+            window: arcade.Window = arcade.get_window()
+            main_menu_view: arcade.View = window.current_view
+
+            # Отключение процессов главного меню
+            main_menu_view.background_soundtrack.stop(main_menu_view.background_soundtrack_player)
+            main_menu_view.ui_manager.disable()
+
+            # Переключение на меню уровней
+            levels_menu_view: arcade.View = LevelsMenu(main_menu_view)
+            levels_menu_view.setup()
+            window.show_view(levels_menu_view)
+
+    class ExitButton(arcade.gui.UIFlatButton):
+        """Кнопка Exit"""
+
+        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+            # Получение родителей
+            window: arcade.Window = arcade.get_window()
+
+            # Закрытие окна
+            window.close()
 
     def __init__(self):
         super().__init__()
@@ -85,23 +88,16 @@ class MainMenu(arcade.View):
         self.ui_manager = arcade.gui.UIManager()
         self.ui_manager._pixelated = True
         self.ui_manager.enable()
-        # Общий стиль кнопок
-        button_style = {
-            "normal": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(60, 60, 60)),
-            "hover": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(80, 80, 80)),
-            "press": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(100, 100, 100)),
-            "disabled": UIFlatButtonStyle(font_name="CGXYZ LCD", font_size=16, bg=(160, 160, 160))
-        }
         # Кнопка Play
-        self.play_button = PlayButton(
+        self.play_button = self.PlayButton(
             x=self.screen_width * 0.5 - 123, y=self.screen_height * 0.7 - 125 - 32,
-            width=256, height=64, text="PLAY", style=button_style
+            width=256, height=64, text="PLAY", style=styles.uiflatbutton_basic
         )
         self.ui_manager.add(self.play_button)
         # Кнопка Exit
-        self.exit_button = ExitButton(
+        self.exit_button = self.ExitButton(
             x=self.screen_width * 0.5 - 123, y=self.screen_height * 0.7 - 200 - 32,
-            width=256, height=64, text="EXIT", style=button_style
+            width=256, height=64, text="EXIT", style=styles.uiflatbutton_basic
         )
         self.ui_manager.add(self.exit_button)
 

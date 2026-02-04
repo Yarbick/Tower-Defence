@@ -6,3 +6,4 @@ camera_move_down: arcade.key = arcade.key.DOWN
 camera_move_up: arcade.key = arcade.key.UP
 camera_move_boost: arcade.key = arcade.key.LSHIFT
 skip_wave: arcade.key = arcade.key.SPACE
+pause: arcade.key = arcade.key.ESCAPE
