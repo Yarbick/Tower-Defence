@@ -1,5 +1,7 @@
 # Графика
 import arcade
+# Звуки
+import sounds_volume
 # Математические расчёты
 from math import atan2
 # Игровые объекты
@@ -110,7 +112,7 @@ class Tower(arcade.Sprite):
         # Проверка на возможность выстрелить
         if self.curr_target and self.fire_timer >= self.fire_rate:
             # Воспроизведение звука
-            self.shot_sound.play()
+            self.shot_sound.play(volume=sounds_volume.towers)
 
             # Создание пули
             self.view.bullets_list.append(self.bullet(
@@ -127,7 +129,7 @@ class Tower(arcade.Sprite):
         # Проверка на лимит уровней
         if self.upgrade_level < 5:
             # Воспроизведение звука
-            self.money_sound.play()
+            self.money_sound.play(volume=sounds_volume.others)
 
             # Улучшение показателей
             self.damage *= 1.2
@@ -152,7 +154,7 @@ class Tower(arcade.Sprite):
         """Удаление башни"""
 
         # Воспроизведение звука
-        self.money_sound.play()
+        self.money_sound.play(volume=sounds_volume.others)
 
         # Прибавление денег игроку
         self.view.player_money += self.delete_price

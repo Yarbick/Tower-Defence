@@ -6,6 +6,7 @@ import arcade.gui
 from pyglet.graphics import Batch
 # Звуки
 import pyglet.media
+import sounds_volume
 # Бинды клавиатуры
 import controls
 # Стили
@@ -379,7 +380,7 @@ class Level(arcade.View):
             self.match_window()
 
             # Воспроизведение звука
-            self.result_sound.play()
+            self.result_sound.play(volume=sounds_volume.game_over)
 
         def match_window(self) -> None:
             """Настройка координат виджетов под размер экрана"""
@@ -403,9 +404,13 @@ class Level(arcade.View):
         self.parent: arcade.View = parent
 
         # Загрузка саундтреков
-        self.background_soundtrack: arcade.Sound = arcade.load_sound(LEVELS[level_name]["background_soundtrack"])
+        self.background_soundtrack: arcade.Sound = arcade.load_sound(
+            LEVELS[level_name]["background_soundtrack"], streaming=True
+        )
         if "boss_soundtrack" in LEVELS[level_name].keys():
-            self.boss_soundtrack: arcade.Sound = arcade.load_sound(LEVELS[level_name]["boss_soundtrack"])
+            self.boss_soundtrack: arcade.Sound = arcade.load_sound(
+                LEVELS[level_name]["boss_soundtrack"], streaming=True
+            )
 
         # Размеры окна
         self.screen_width: int | None = None
@@ -557,7 +562,7 @@ class Level(arcade.View):
 
         # Запуск саундтрека
         self.background_soundtrack_player = pyglet.media.Player()
-        self.background_soundtrack_player = self.background_soundtrack.play(loop=True)
+        self.background_soundtrack_player = self.background_soundtrack.play(volume=sounds_volume.soundtracks, loop=True)
 
         # Обнуление клавиш
         self.keys_pressed = set()

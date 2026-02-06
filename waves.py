@@ -2,6 +2,7 @@
 import arcade
 # Звуки
 import pyglet.media
+import sounds_volume
 
 
 class Waves:
@@ -65,7 +66,7 @@ class Waves:
 
         if self.wave_timer >= self.wave_rate or self.skipping:
             # Воспроизведение звука
-            self.wave_appear.play()
+            self.wave_appear.play(volume=sounds_volume.others)
 
             # Добавление врагов в очередь
             self.enemy_queue.extend(self.waves.pop(0))

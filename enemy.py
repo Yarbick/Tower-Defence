@@ -2,6 +2,8 @@
 from random import choices, choice, sample
 # Графика
 import arcade
+# Звуки
+import sounds_volume
 # Игровые объекты
 import tower
 # Прототипы
@@ -101,7 +103,7 @@ class Enemy(arcade.Sprite):
             # Смерть при завершении пути
             if self.curr_part >= len(self.way):
                 # Воспроизведение звука
-                self.hit.play()
+                self.hit.play(sounds_volume.others)
 
                 # Нанесение урона базе
                 self.view.player_health -= self.damage
@@ -282,7 +284,7 @@ class BossEnemy(Enemy):
 
         # Саундтрек
         self.view.background_soundtrack.stop(self.view.background_soundtrack_player)
-        self.view.background_soundtrack_player = self.boss_soundtrack.play(loop=True)
+        self.view.background_soundtrack_player = self.boss_soundtrack.play(volume=sounds_volume.soundtracks, loop=True)
 
     def update(self, delta_time: float = 1 / 60) -> None:
         super().update()
@@ -390,7 +392,7 @@ class BossEnemy(Enemy):
         super().dead()
 
         # Воспроизведение звуков
-        self.dead_sound.play()
+        self.dead_sound.play(volume=sounds_volume.others)
 
         # Снятие всех авто вызовов
         arcade.unschedule(self.start_spawn_enemies)

@@ -7,7 +7,7 @@ from main_menu import MainMenu
 def main() -> None:
     # Окно
     window = arcade.Window(1000, 800, "Tower Defence", resizable=True)
-    window.set_minimum_size(800, 500)
+    window.set_minimum_size(800, 600)
     window.set_maximum_size(1920, 1080)
     # Главное меню
     main_menu_view = MainMenu()

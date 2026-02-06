@@ -3,8 +3,10 @@ import arcade
 import arcade.gui
 # Звуки
 import pyglet.media
-# Меню уровней
+import sounds_volume
+# Сцены
 from levels_menu import LevelsMenu
+from settings_menu import SettingsMenu
 # Стили
 import styles
 
@@ -35,6 +37,23 @@ class MainMenu(arcade.View):
             levels_menu_view.setup()
             window.show_view(levels_menu_view)
 
+    class SettingsButton(arcade.gui.UIFlatButton):
+        """Кнопка Settings"""
+
+        def on_click(self, event: arcade.gui.UIOnClickEvent) -> None:
+            # Получение родителей
+            window: arcade.Window = arcade.get_window()
+            main_menu_view: arcade.View = window.current_view
+
+            # Отключение процессов главного меню
+            main_menu_view.background_soundtrack.stop(main_menu_view.background_soundtrack_player)
+            main_menu_view.ui_manager.disable()
+
+            # Переключение на меню уровней
+            settings_menu_view: arcade.View = SettingsMenu(main_menu_view)
+            settings_menu_view.setup()
+            window.show_view(settings_menu_view)
+
     class ExitButton(arcade.gui.UIFlatButton):
         """Кнопка Exit"""
 
@@ -55,7 +74,7 @@ class MainMenu(arcade.View):
         self.logo_texture: arcade.Texture = arcade.load_texture("resources/assets/images/logo/logo_text.png")
         # Загружаем саундтреки
         self.background_soundtrack: arcade.Sound = arcade.load_sound(
-            "resources/assets/sounds/soundtracks/main_menu.mp3"
+            "resources/assets/sounds/soundtracks/main_menu.mp3", streaming=True
         )
 
         # Размер окна
@@ -84,19 +103,28 @@ class MainMenu(arcade.View):
         self.screen_width: int = self.width
         self.screen_height: int = self.height
 
+        # Создание камер
+        self.gui_camera = arcade.camera.Camera2D()
+        self.world_camera = arcade.camera.Camera2D()
+        self.world_camera.position = self.screen_width * 0.5, self.screen_height * 0.5
+        self.world_camera.move_direction = 1  # Аттрибут камеры для направления движения
+
         # Создание виджетов
         self.ui_manager = arcade.gui.UIManager()
         self.ui_manager._pixelated = True
         self.ui_manager.enable()
         # Кнопка Play
         self.play_button = self.PlayButton(
-            x=self.screen_width * 0.5 - 123, y=self.screen_height * 0.7 - 125 - 32,
             width=256, height=64, text="PLAY", style=styles.uiflatbutton_basic
         )
         self.ui_manager.add(self.play_button)
+        # Кнопка Settings
+        self.settings_button = self.SettingsButton(
+            width=256, height=64, text="SETTINGS", style=styles.uiflatbutton_basic
+        )
+        self.ui_manager.add(self.settings_button)
         # Кнопка Exit
         self.exit_button = self.ExitButton(
-            x=self.screen_width * 0.5 - 123, y=self.screen_height * 0.7 - 200 - 32,
             width=256, height=64, text="EXIT", style=styles.uiflatbutton_basic
         )
         self.ui_manager.add(self.exit_button)
@@ -107,15 +135,12 @@ class MainMenu(arcade.View):
         # Получение размеров карты
         self.world_width, self.world_height = tilemap.width * TILE_SIZE, tilemap.height * TILE_SIZE
 
-        # Создание камер
-        self.gui_camera = arcade.camera.Camera2D()
-        self.world_camera = arcade.camera.Camera2D()
-        self.world_camera.position = self.screen_width * 0.5, self.screen_height * 0.5
-        self.world_camera.move_direction = 1  # Аттрибут камеры для направления движения
-
         # Запуск саундтрека
         self.background_soundtrack_player = pyglet.media.Player()
-        self.background_soundtrack_player = self.background_soundtrack.play(loop=True)
+        self.background_soundtrack_player = self.background_soundtrack.play(volume=sounds_volume.soundtracks, loop=True)
+
+        # Подстраивание под размеры
+        self.on_resize(self.width, self.height)
 
     def on_draw(self) -> None:
         self.clear()
@@ -160,5 +185,11 @@ class MainMenu(arcade.View):
             self.screen_height * 0.5
         )
         # Настройка кнопок под новые размеры
-        self.play_button.center_x, self.play_button.center_y = self.screen_width * 0.5, self.screen_height * 0.7 - 125
-        self.exit_button.center_x, self.exit_button.center_y = self.screen_width * 0.5, self.screen_height * 0.7 - 200
+        self.play_button.center_x = self.screen_width * 0.5
+        self.play_button.center_y = self.screen_height * 0.7 - 125
+
+        self.settings_button.center_x = self.play_button.center_x
+        self.settings_button.top = self.play_button.bottom - 15
+
+        self.exit_button.center_x = self.play_button.center_x
+        self.exit_button.top = self.settings_button.bottom - 15

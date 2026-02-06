@@ -76,13 +76,15 @@ class LevelsMenu(arcade.View):
         self.screen_width: int = self.width
         self.screen_height: int = self.height
 
+        # Создание камер
+        self.gui_camera = arcade.camera.Camera2D()
+
         # Создание текста
         self.batch = Batch()
         # Заголовок
         self.header_text = arcade.Text(
-            "Levels",
-            20, self.screen_height - 20,
-            arcade.color.WHITE, 20, font_name="CGXYZ LCD",
+            x=0, y=0,
+            text="Levels", color=arcade.color.WHITE, font_size=20, font_name="CGXYZ LCD",
             anchor_y="top", batch=self.batch
         )
         # Создание виджетов
@@ -91,13 +93,11 @@ class LevelsMenu(arcade.View):
         self.ui_manager.enable()
         # Кнопка Back
         self.back_button = self.BackButton(
-            x=self.screen_width - 133, y=self.screen_height - 70,
             width=128, height=64, text="BACK", style=styles.uiflatbutton_basic
         )
         self.ui_manager.add(self.back_button)
         # Layout для кнопок уровней
         self.levels_layout = arcade.gui.UIBoxLayout(
-            x=20, y=self.screen_height - self.header_text.font_size * 4 - 10 - len(LEVELS) * 60,
             vertical=True, space_between=10
         )
         # Добавление кнопок
@@ -109,8 +109,8 @@ class LevelsMenu(arcade.View):
             self.levels_layout.add(level_button)
         self.ui_manager.add(self.levels_layout)
 
-        # Создание камеры
-        self.gui_camera = arcade.camera.Camera2D()
+        # Подстраивание под размеры
+        self.on_resize(self.width, self.height)
 
     def on_draw(self) -> None:
         self.clear()
@@ -132,12 +132,15 @@ class LevelsMenu(arcade.View):
         # Настройка камеры под новые размеры
         self.gui_camera.match_window()
         self.gui_camera.position = self.screen_width * 0.5, self.screen_height * 0.5
-        # Настройка заголовка под новые размеры
+        # Настройка виджетов под новые размеры
         self.header_text.x = 20
         self.header_text.y = self.screen_height - 20
-        # Настройка кнопок под новые размеры
+
         self.back_button.left = self.screen_width - 133
         self.back_button.bottom = self.screen_height - 70
+
+        self.levels_layout.left = 20
+        self.levels_layout.top = self.screen_height - self.header_text.font_size * 4 - 10 - len(LEVELS) * 60
         for level_button in self.levels_layout.children:
             level_button.width = self.screen_width - self.levels_layout.left * 2
         self.levels_layout.width = self.screen_width - self.levels_layout.left * 2

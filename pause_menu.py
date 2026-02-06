@@ -63,10 +63,11 @@ class PauseMenu(arcade.View):
 
         # Создание виджетов
         self.ui_manager = arcade.gui.UIManager()
+        self.ui_manager._pixelated = True
         self.ui_manager.enable()
         # Заголовок
         self.header_label = arcade.gui.UILabel(
-            text="Pause", font_name="CGXYZ LCD", font_size=24
+            text="PAUSE", font_name="CGXYZ LCD", font_size=24
         )
         self.ui_manager.add(self.header_label)
         # Кнопка возвращения на предыдущую сцену
@@ -110,4 +111,4 @@ class PauseMenu(arcade.View):
         self.continue_button.center_y = self.header_label.bottom - 80
 
         self.return_to_main_menu_button.center_x = self.continue_button.center_x
-        self.return_to_main_menu_button.top = self.continue_button.bottom - 20
+        self.return_to_main_menu_button.top = self.continue_button.bottom - 15
