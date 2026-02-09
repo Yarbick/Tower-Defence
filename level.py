@@ -1,4 +1,5 @@
 # Прочие библиотеки
+import csv
 from inspect import getmembers
 # Графика
 import arcade
@@ -17,9 +18,8 @@ from pause_menu import PauseMenu
 import tower
 import enemy
 import waves
-# Импорт прототипов
-from resources.prototypes.levels import LEVELS
-from resources.prototypes.towers import TOWERS
+# Данные игрока
+import player_data
 
 # Константы
 TILEMAP_SCALING = 2.0
@@ -127,7 +127,7 @@ class Level(arcade.View):
             # Кнопки для создания башен
             self.buttons_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=10, width=50, height=50)
             self.add(self.buttons_layout)
-            for tower_name in TOWERS:
+            for tower_name in player_data.towers:
                 # Поиск класса башни по названию прототипа
                 tower_class: tower.Tower | None = None
                 for obj in getmembers(tower):
@@ -145,7 +145,7 @@ class Level(arcade.View):
                         texture=arcade.load_texture(f"resources/assets/images/towers/{tower_name}/base.png")
                     )
                     label = arcade.gui.UILabel(
-                        text=str(TOWERS[tower_name]["price"]), font_name="CGXYZ LCD", font_size=6
+                        text=str(player_data.towers[tower_name]["price"]), font_name="CGXYZ LCD", font_size=6
                     )
                     button.add(label)
                     self.buttons_layout.add(button)
@@ -264,15 +264,15 @@ class Level(arcade.View):
             self.buttons_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=10, width=50, height=50)
             self.add(self.buttons_layout)
             # Кнопка улучшения башни
-            upgrade_button = self.UpgradeTowerButton(
+            self.upgrade_button = self.UpgradeTowerButton(
                 width=90, height=50, text="Upgrade", style=styles.uiflatbutton_tower_menu
             )
-            self.buttons_layout.add(upgrade_button)
+            self.buttons_layout.add(self.upgrade_button)
             # Кнопка удаления башни
-            delete_button = self.DeleteTowerButton(
+            self.delete_button = self.DeleteTowerButton(
                 width=90, height=50, text="Delete", style=styles.uiflatbutton_tower_menu
             )
-            self.buttons_layout.add(delete_button)
+            self.buttons_layout.add(self.delete_button)
 
             # Настройка координат виджетов под размер экрана
             self.match_window()
@@ -289,6 +289,7 @@ class Level(arcade.View):
             round(self.editing_tower.upgrade_price) if self.editing_tower.upgrade_level < 5 else "Full"
             }"
             self.delete_price_text.text = f"Delete $: {round(self.editing_tower.delete_price)}"
+            self.upgrade_button.disabled = self.editing_tower.upgrade_level >= 5
 
         def match_tower(self):
             """Подстраивание меню под выбранную башню"""
@@ -405,11 +406,11 @@ class Level(arcade.View):
 
         # Загрузка саундтреков
         self.background_soundtrack: arcade.Sound = arcade.load_sound(
-            LEVELS[level_name]["background_soundtrack"], streaming=True
+            player_data.levels[level_name]["background_soundtrack"], streaming=True
         )
-        if "boss_soundtrack" in LEVELS[level_name].keys():
+        if "boss_soundtrack" in player_data.levels[level_name].keys():
             self.boss_soundtrack: arcade.Sound = arcade.load_sound(
-                LEVELS[level_name]["boss_soundtrack"], streaming=True
+                player_data.levels[level_name]["boss_soundtrack"], streaming=True
             )
 
         # Размеры окна
@@ -465,11 +466,15 @@ class Level(arcade.View):
         self.keys_pressed: set | None = None
 
     def setup(self):
+        # Обновление данных об игроке
+        player_data.get_available_towers()
+        player_data.get_available_levels()
+
         # Получение размеров окна
         self.screen_width, self.screen_height = self.width, self.height
 
         # Создание карты
-        self.tilemap = arcade.load_tilemap(LEVELS[self.level_name]["tilemap"], scaling=TILEMAP_SCALING)
+        self.tilemap = arcade.load_tilemap(player_data.levels[self.level_name]["tilemap"], scaling=TILEMAP_SCALING)
         self.background_list = self.tilemap.sprite_lists["background"]
         self.enemy_base_list = self.tilemap.sprite_lists["enemy_base"]
         self.player_base_list = self.tilemap.sprite_lists["player_base"]
@@ -483,10 +488,10 @@ class Level(arcade.View):
 
         # Создание волн
         self.waves = waves.Waves(
-            LEVELS[self.level_name]["waves"],
-            LEVELS[self.level_name]["wave_rate"],
+            player_data.levels[self.level_name]["waves"],
+            player_data.levels[self.level_name]["wave_rate"],
             self.find_enemies_way(),
-            LEVELS[self.level_name]["difficulty"],
+            player_data.levels[self.level_name]["difficulty"],
             self
         )
 
@@ -525,7 +530,7 @@ class Level(arcade.View):
         )
         # Номер волны
         self.wave_number_text = arcade.Text(
-            f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}",
+            f"Wave: {max(0, len(player_data.levels[self.level_name]["waves"]) - len(self.waves.waves))}",
             20, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
@@ -630,7 +635,9 @@ class Level(arcade.View):
         # Текст
         self.health_text.text = f"Health: {max(0, self.player_health)}"
         self.money_text.text = f"Money: {round(self.player_money)}"
-        self.wave_number_text.text = f"Wave: {max(0, len(LEVELS[self.level_name]["waves"]) - len(self.waves.waves))}"
+        self.wave_number_text.text = f"Wave: {max(
+            0, len(player_data.levels[self.level_name]["waves"]) - len(self.waves.waves)
+        )}"
         self.time_left_text.text = f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}"
         self.skip_text.batch = self.batch if self.waves.can_skip_wave() else None
 
@@ -790,12 +797,59 @@ class Level(arcade.View):
     def check_game_status(self):
         """Проверка на завершение игры"""
 
-        if self.player_health <= 0:  # Проверка на поражение
-            self.game_status = False
-        elif (not self.enemies_list) and (not self.waves.waves) and (not self.waves.enemy_queue):  # Проверка на победу
-            self.game_status = True
+        if (not self.enemies_list) and (not self.waves.waves) and (not self.waves.enemy_queue):  # Проверка на победу
+            self.victory()
+        elif self.player_health <= 0:  # Проверка на поражение
+            self.defeat()
         else:
             return
+
         # Создание окна результатов игры
         self.result_widget = self.ResultWidget(self, self.game_status)
         self.ui_manager.add(self.result_widget)
+
+    def victory(self):
+        """Победа"""
+
+        # Переключение флагов
+        self.game_status = True
+
+        # Открытие нового уровня
+        # Получение нового уровня из награды за уровень
+        level_reward = player_data.levels[self.level_name]["reward"]["level"]
+        # Проверка на наличие награды
+        if level_reward is not None:
+            # Получение данных игрока из файла
+            with open("player_data/saves/available_levels.csv", mode="r", encoding="UTF-8") as file:
+                available_levels = list(csv.DictReader(file))[0]
+            # Открытие уровня
+            available_levels[level_reward] = "1"
+
+            # Запись новых данных игрока в файл
+            with open("player_data/saves/available_levels.csv", mode="w", encoding="UTF-8", newline="") as file:
+                writer = csv.DictWriter(file, available_levels.keys())
+                writer.writeheader()
+                writer.writerow(available_levels)
+
+        # Открытие новой башни
+        # Получение новой башни из награды за уровень
+        tower_reward = player_data.levels[self.level_name]["reward"]["tower"]
+        # Проверка на наличие награды
+        if tower_reward is not None:
+            # Получение данных игрока из файла
+            with open("player_data/saves/available_towers.csv", mode="r", encoding="UTF-8") as file:
+                available_towers = list(csv.DictReader(file))[0]
+            # Открытие башни
+            available_towers[tower_reward] = "1"
+
+            # Запись новых данных игрока в файл
+            with open("player_data/saves/available_towers.csv", mode="w", encoding="UTF-8", newline="") as file:
+                writer = csv.DictWriter(file, available_towers.keys())
+                writer.writeheader()
+                writer.writerow(available_towers)
+
+    def defeat(self):
+        """Поражение"""
+
+        # Переключение флагов
+        self.game_status = False

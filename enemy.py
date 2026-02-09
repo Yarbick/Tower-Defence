@@ -271,6 +271,8 @@ class BossEnemy(Enemy):
         # Флаги
         self.is_2_phase: bool = False
 
+        # Анимация смерти
+        self.dead_animation_speed: float = 1 / 10
         # Анимация атаки
         self.attack_animation_textures = self.attack_animation_textures_1_phase
         self.attack_animation_running: bool = False

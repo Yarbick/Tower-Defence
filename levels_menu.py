@@ -6,6 +6,8 @@ from pyglet.graphics import Batch
 from level import Level
 # Прототипы
 from resources.prototypes.levels import LEVELS
+# Данные игрока
+import player_data
 # Стили
 import styles
 
@@ -72,6 +74,10 @@ class LevelsMenu(arcade.View):
         self.ui_manager: arcade.gui.UIManager | None = None
 
     def setup(self) -> None:
+        # Обновление данных об игроке
+        player_data.get_available_towers()
+        player_data.get_available_levels()
+
         # Получение размеров окна
         self.screen_width: int = self.width
         self.screen_height: int = self.height
@@ -106,6 +112,7 @@ class LevelsMenu(arcade.View):
                 level_name,
                 width=self.screen_width - self.levels_layout.left * 2, text=level_name, style=styles.uiflatbutton_basic
             )
+            level_button.disabled = level_name not in player_data.levels.keys()
             self.levels_layout.add(level_button)
         self.ui_manager.add(self.levels_layout)
 

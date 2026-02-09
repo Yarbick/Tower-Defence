@@ -7,6 +7,7 @@ import enemy
 #   "waves": набор волн
 #   "wave_rate": длительность волны
 #   "difficulty": модификатор сложности
+#   "reward": награда за прохождение уровня
 # }
 
 LEVELS = {
@@ -24,7 +25,8 @@ LEVELS = {
             tuple(enemy.BasicEnemy for _ in range(30))
         ]),
         "wave_rate": 15.0,
-        "difficulty": 1.0
+        "difficulty": 1.0,
+        "reward": {"level": "High-speed traffic", "tower": "explosive_tower"}
     },
 
     "High-speed traffic": {
@@ -50,7 +52,8 @@ LEVELS = {
             tuple([enemy.BasicEnemy for _ in range(40)] + [enemy.FastEnemy for _ in range(40)]),
         ]),
         "wave_rate": 20.0,
-        "difficulty": 1.1
+        "difficulty": 1.1,
+        "reward": {"level": "The heavyweights", "tower": "sniper_tower"}
     },
 
     "The heavyweights": {
@@ -82,7 +85,8 @@ LEVELS = {
                   [enemy.BigEnemy for _ in range(30)])
         ]),
         "wave_rate": 25.0,
-        "difficulty": 1.2
+        "difficulty": 1.2,
+        "reward": {"level": "Breakthrough", "tower": "minigun_tower"}
     },
 
     "Breakthrough": {
@@ -114,7 +118,8 @@ LEVELS = {
                   [enemy.PushEnemy for _ in range(30)])
         ]),
         "wave_rate": 30.0,
-        "difficulty": 1.3
+        "difficulty": 1.3,
+        "reward": {"level": "The last frontier", "tower": None}
     },
 
     "The last frontier": {
@@ -144,6 +149,7 @@ LEVELS = {
             tuple([enemy.BossEnemy] + [enemy.PushEnemy for _ in range(8)])
         ]),
         "wave_rate": 35.0,
-        "difficulty": 1.5
+        "difficulty": 1.5,
+        "reward": {"level": None, "tower": None}
     }
 }
