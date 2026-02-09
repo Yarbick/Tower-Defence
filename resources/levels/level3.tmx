@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="25" height="25" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="1">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="45" height="45" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="1">
  <tileset firstgid="1" source="tile_sheet.tsx"/>
- <layer id="1" name="background" width="25" height="25">
+ <layer id="1" name="background" width="45" height="45">
   <data encoding="base64" compression="zlib">
-   eJxjZmBgYB4gzE5nffTELFQyh5VOegZDuOCLV2qF5yimHsaWzoZC3hzOeDiH/2Au1wYjJqbMxJVeWEk0Z6TF/2AJExAGAMKcB34=
+   eJztmEsOgCAMREmUeP8buyUm0sL0l9LFW4kgM9OiXq21qygA+uL4R3k8yq10D1cnai6OHqueZGHHO0ukfKHmyey/5t5mtRU9W5J7lbgvcwZRkCyNuu54OPNlx7Py+R/Kn1kOTupFJ1B1sqfPtw4QHa2/JU7Auxdx1vfyvfKWh+rf8hpmqkukD/XFeSqLehpE0NbyTPU+v6MQwXcLqN43Xkf+FUj02KjZjPpcUhmQ2D81JlK9SX5jImivO3rCeRcp/HkBpjcYXw==
   </data>
  </layer>
- <layer id="2" name="enemy_base" width="25" height="25">
+ <layer id="2" name="enemy_base" width="45" height="45">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjIJRQG3ANdAOGAWjYBQMewAANdQACw==
+   eJztzjEBAAAMAiDv9Q+8FvpAAhIAAACAnVsHAAAAoOgBtfQACw==
   </data>
  </layer>
- <layer id="3" name="player_base" width="25" height="25">
+ <layer id="3" name="player_base" width="45" height="45">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjIJRMAqoBzgH2gGjYBSMEAAAKJAACg==
+   eJztzjENAAAIA7C9+DeMigWOVkETAAAAAOib6wAAAMADC5WgAAo=
   </data>
  </layer>
- <layer id="4" name="road" width="25" height="25">
+ <layer id="4" name="road" width="45" height="45">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjALaASYsGJ84uXZg4+MSHy52kGMXPrNwxQ+lgJphhM8OaqWnUTAKhgoAAE4LAE0=
+   eJzt1DEKACAMA0Dx/492F1vXiHfQJVOG0DEAAADgD/NwXZ5g7zIveYIfOid077pV+06TvIlK8r8AAADesAB9OABN
   </data>
  </layer>
- <layer id="5" name="platforms" width="25" height="25">
+ <layer id="5" name="platforms" width="45" height="45">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjGTAiISJER+sgB7+QDeLkYD4YLUD2TxqmEXIHmT7hkp6wgWGiz9GwfAAAK6MACc=
+   eJzt0DkKACAQA0D3/58WOxE8EIQVZiBNqpBSAAAA4E50Oem58+PP47bY9Bn8uLnJvG1l9i9v+BkAAPKoUvoAJw==
   </data>
  </layer>
 </map>

@@ -114,6 +114,7 @@ class LevelsMenu(arcade.View):
             )
             level_button.disabled = level_name not in player_data.levels.keys()
             self.levels_layout.add(level_button)
+        self.levels_layout.fit_content()
         self.ui_manager.add(self.levels_layout)
 
         # Подстраивание под размеры
@@ -147,7 +148,7 @@ class LevelsMenu(arcade.View):
         self.back_button.bottom = self.screen_height - 70
 
         self.levels_layout.left = 20
-        self.levels_layout.top = self.screen_height - self.header_text.font_size * 4 - 10 - len(LEVELS) * 60
+        self.levels_layout.top = self.screen_height - self.header_text.font_size * 4 - 20
         for level_button in self.levels_layout.children:
             level_button.width = self.screen_width - self.levels_layout.left * 2
         self.levels_layout.width = self.screen_width - self.levels_layout.left * 2
