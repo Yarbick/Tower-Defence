@@ -10,7 +10,7 @@ import bullet
 from resources.prototypes.towers import TOWERS
 
 # Константы
-TOWER_SCALING = 2.0
+TOWER_SCALING: float = 2.0
 
 
 class Tower(arcade.Sprite):

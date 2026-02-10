@@ -22,10 +22,10 @@ import waves
 import player_data
 
 # Константы
-TILEMAP_SCALING = 2.0
-TILE_SIZE = 32 * TILEMAP_SCALING
-CAMERA_SPEED = 300
-CAMERA_SPEED_BOOST = 2.0
+TILEMAP_SCALING: float = 2.0
+TILE_SIZE: float = 32 * TILEMAP_SCALING
+CAMERA_SPEED: float = 300.0
+CAMERA_SPEED_BOOST: float = 2.0
 
 
 class Level(arcade.View):
@@ -338,10 +338,6 @@ class Level(arcade.View):
                 # Получение родителей
                 level_view: arcade.View = self.parent.view
                 window: arcade.Window = arcade.get_window()
-
-                # Отключение процессов уровня
-                level_view.background_soundtrack.stop(level_view.background_soundtrack_player)
-                level_view.ui_manager.disable()
 
                 # Возвращение в главно меню
                 main_menu_view: arcade.View = level_view.parent.parent
@@ -717,6 +713,11 @@ class Level(arcade.View):
 
     def on_key_release(self, key: int, modifiers: int) -> None:
         self.keys_pressed.remove(key)
+
+    def on_hide_view(self) -> None:
+        # Отключение процессов уровня
+        self.background_soundtrack.stop(self.background_soundtrack_player)
+        self.ui_manager.disable()
 
     def check_camera_borders(self, camera: arcade.Camera2D) -> None:
         """Проверка камеры на выход за границы экрана"""

@@ -24,9 +24,6 @@ class LevelsMenu(arcade.View):
             window: arcade.Window = arcade.get_window()
             levels_menu_view: arcade.View = window.current_view
 
-            # Отключение процессов меню уровней
-            levels_menu_view.ui_manager.disable()
-
             # Возвращение в главное меню
             main_menu_view: arcade.View = levels_menu_view.parent
             main_menu_view.setup()
@@ -43,9 +40,6 @@ class LevelsMenu(arcade.View):
             # Получение родителей
             window: arcade.Window = arcade.get_window()
             levels_menu_view: arcade.View = window.current_view
-
-            # Отключение процессов меню уровней
-            levels_menu_view.ui_manager.disable()
 
             # Переключение на уровень
             level_view: arcade.View = Level(self.level_name, levels_menu_view)
@@ -152,3 +146,7 @@ class LevelsMenu(arcade.View):
         for level_button in self.levels_layout.children:
             level_button.width = self.screen_width - self.levels_layout.left * 2
         self.levels_layout.width = self.screen_width - self.levels_layout.left * 2
+
+    def on_hide_view(self) -> None:
+        # Отключение процессов меню уровней
+        self.ui_manager.disable()

@@ -10,7 +10,7 @@ all_keys: dict = {key: code for key, code in getmembers(arcade.key) if "MOTION" 
 
 def set_controls(new_controls_data: dict) -> None:
     """Назначение биндов"""
-    global controls_data, camera_move_left,camera_move_right, camera_move_down, camera_move_up, camera_move_boost,\
+    global controls_data, camera_move_left, camera_move_right, camera_move_down, camera_move_up, camera_move_boost, \
         skip_wave, pause
 
     controls_data = new_controls_data.copy()

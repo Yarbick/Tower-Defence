@@ -11,9 +11,9 @@ from settings_menu import SettingsMenu
 import styles
 
 # Константы
-TILEMAP_SCALING = 2.0
-TILE_SIZE = 32 * TILEMAP_SCALING
-BACKGROUND_SPEED = 100
+TILEMAP_SCALING: float = 2.0
+TILE_SIZE: float = 32 * TILEMAP_SCALING
+BACKGROUND_SPEED: float = 100.0
 
 
 class MainMenu(arcade.View):
@@ -28,10 +28,6 @@ class MainMenu(arcade.View):
             window: arcade.Window = arcade.get_window()
             main_menu_view: arcade.View = window.current_view
 
-            # Отключение процессов главного меню
-            main_menu_view.background_soundtrack.stop(main_menu_view.background_soundtrack_player)
-            main_menu_view.ui_manager.disable()
-
             # Переключение на меню уровней
             levels_menu_view: arcade.View = LevelsMenu(main_menu_view)
             levels_menu_view.setup()
@@ -44,10 +40,6 @@ class MainMenu(arcade.View):
             # Получение родителей
             window: arcade.Window = arcade.get_window()
             main_menu_view: arcade.View = window.current_view
-
-            # Отключение процессов главного меню
-            main_menu_view.background_soundtrack.stop(main_menu_view.background_soundtrack_player)
-            main_menu_view.ui_manager.disable()
 
             # Переключение на меню уровней
             settings_menu_view: arcade.View = SettingsMenu(main_menu_view)
@@ -193,3 +185,8 @@ class MainMenu(arcade.View):
 
         self.exit_button.center_x = self.play_button.center_x
         self.exit_button.top = self.settings_button.bottom - 15
+
+    def on_hide_view(self) -> None:
+        # Отключение процессов главного меню
+        self.background_soundtrack.stop(self.background_soundtrack_player)
+        self.ui_manager.disable()

@@ -17,9 +17,6 @@ class PauseMenu(arcade.View):
             window: arcade.Window = arcade.get_window()
             pause_menu_view: arcade.View = window.current_view
 
-            # Отключение прогрессов меню паузы
-            pause_menu_view.ui_manager.disable()
-
             # Переключение на уровень
             level_view: arcade.View = pause_menu_view.parent
             level_view.ui_manager.enable()
@@ -33,9 +30,6 @@ class PauseMenu(arcade.View):
             # Получение родителей
             window: arcade.Window = arcade.get_window()
             pause_menu_view: arcade.View = window.current_view
-
-            # Отключение прогрессов меню паузы
-            pause_menu_view.ui_manager.disable()
 
             # Переключение в главное меню
             main_menu_view: arcade.View = pause_menu_view.parent.parent.parent
@@ -112,3 +106,7 @@ class PauseMenu(arcade.View):
 
         self.return_to_main_menu_button.center_x = self.continue_button.center_x
         self.return_to_main_menu_button.top = self.continue_button.bottom - 15
+
+    def on_hide_view(self) -> None:
+        # Отключение прогрессов меню паузы
+        self.ui_manager.disable()

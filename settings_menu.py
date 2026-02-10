@@ -14,6 +14,7 @@ import sounds_volume
 class SettingsMenu(arcade.View):
     """Меню для настроек"""
 
+    # Виджеты
     class KeySelectButton(arcade.gui.UIFlatButton):
         """Кнопка для выбора бинда для действия"""
 
@@ -84,9 +85,6 @@ class SettingsMenu(arcade.View):
             # Получение родителей
             window: arcade.Window = arcade.get_window()
             settings_menu_view: arcade.View = window.current_view
-
-            # Отключение процессов меню уровней
-            settings_menu_view.ui_manager.disable()
 
             # Возвращение в главное меню
             main_menu_view: arcade.View = settings_menu_view.parent
@@ -292,3 +290,7 @@ class SettingsMenu(arcade.View):
 
             # Удаление режима смены бинда у клавиши
             self.selected_action = None
+
+    def on_hide_view(self) -> None:
+        # Отключение процессов меню настроек
+        self.ui_manager.disable()

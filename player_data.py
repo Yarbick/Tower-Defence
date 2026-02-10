@@ -4,6 +4,7 @@ import csv
 from resources.prototypes.levels import LEVELS
 from resources.prototypes.towers import TOWERS
 
+
 def get_available_levels() -> None:
     """Получение доступных уровней"""
     global levels
