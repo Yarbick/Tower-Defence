@@ -117,7 +117,7 @@ class Tower(arcade.Sprite):
             # Создание пули
             self.view.bullets_list.append(self.bullet(
                 self.center_x, self.center_y, self.angle, self.bullet_texture,
-                self.bullet_speed, self.damage, self.curr_target
+                self.bullet_speed, self.damage, self.curr_target, self.view
             ))
 
             # Сброс таймера

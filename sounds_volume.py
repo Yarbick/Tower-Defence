@@ -3,12 +3,13 @@ import csv
 
 def set_volumes(new_volume_data: dict) -> None:
     """Назначение громкости звуков"""
-    global sounds_volume_data, game_over, soundtracks, towers, others
+    global sounds_volume_data, game_over, soundtracks, towers, enemies, others
 
     sounds_volume_data = new_volume_data.copy()
     game_over = sounds_volume_data["game_over"]
     soundtracks = sounds_volume_data["soundtracks"]
     towers = sounds_volume_data["towers"]
+    enemies = sounds_volume_data["enemies"]
     others = sounds_volume_data["others"]
 
 

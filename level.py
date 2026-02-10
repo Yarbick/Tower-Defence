@@ -442,6 +442,9 @@ class Level(arcade.View):
         self.world_camera: arcade.Camera2D | None = None
         self.gui_camera: arcade.Camera2D | None = None
 
+        # Частицы
+        self.emitters: list | None = None
+
         # Атрибуты для логики игры
         self.player_health: int | None = None
         self.player_money: int | None = None
@@ -507,6 +510,9 @@ class Level(arcade.View):
         self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.world_width * 0.5, self.world_height * 0.5
         self.gui_camera = arcade.camera.Camera2D()
+
+        # Создание частиц
+        self.emitters = []
 
         # Обновление атрибутов логики игры до значений по умолчанию
         self.player_health = 20
@@ -595,6 +601,9 @@ class Level(arcade.View):
                 self.selected_tile[0] - 0.5 * TILE_SIZE, self.selected_tile[1] - 0.5 * TILE_SIZE, TILE_SIZE, TILE_SIZE,
                 arcade.color.WHITE, 2 * TILEMAP_SCALING
             )
+        # Отрисовка частиц
+        for emitter in self.emitters:
+            emitter.draw()
 
         # Отрисовка интерфейса
         self.gui_camera.use()
@@ -630,6 +639,13 @@ class Level(arcade.View):
 
         # Обновление башен
         self.towers_turrets_list.update()
+
+        # Обновление частиц
+        for emitter in self.emitters:
+            emitter.update()
+            # Проверка на окончание эффекта
+            if emitter.can_reap():
+                self.emitters.remove(emitter)
 
         # Обновление интерфейса
         # Текст

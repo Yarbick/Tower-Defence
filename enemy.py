@@ -1,7 +1,8 @@
-# Прочие библиотеки
-from random import choices, choice, sample
 # Графика
 import arcade
+from arcade.particles import Emitter, EmitBurst, FadeParticle
+# Рандом
+from random import choices, choice, sample, uniform
 # Звуки
 import sounds_volume
 # Игровые объекты
@@ -10,7 +11,7 @@ import tower
 from resources.prototypes.enemies import ENEMIES
 
 # Константы
-ENEMY_SCALING = 3.0
+ENEMY_SCALING: float = 3.0
 
 
 class Enemy(arcade.Sprite):
@@ -217,18 +218,99 @@ class BossEnemy(Enemy):
             self.stun_duration: float = stun_duration
             self.parent: BossEnemy = parent
 
+            # Частицы при взрыве ракеты
+            self.EXPLOSIVE_SPARK: arcade.Texture = arcade.make_soft_circle_texture(16, arcade.color.PURPLE_NAVY)
+            self.EXPLOSIVE_SMOKE: arcade.Texture = arcade.make_soft_circle_texture(24, arcade.color.PURPLE_NAVY, 255,
+                                                                                   80)
+
+            # Звуки
+            self.rocket_explosive: arcade.Sound = arcade.load_sound(
+                ENEMIES[self.parent.prototype_name]["rocket_explosive"]
+            )
+
         def update(self, delta_time: float = 1 / 60) -> None:
             # Обновление позиции
             self.center_x += self.change_x * delta_time
             self.center_y += self.change_y * delta_time
+
+            # Оглушение башни
+            self.hit()
+
+        def hit(self) -> None:
+            """Оглушение башни"""
 
             # Проверка на попадание по башне
             targets: list = arcade.check_for_collision_with_list(self, self.parent.view.towers_turrets_list)
             for target in targets:
                 # Оглушение башни
                 target.stunned_time += self.stun_duration
-                # Удаление пули
-                self.remove_from_sprite_lists()
+
+                # Удаление ракеты
+                self.delete()
+
+        def delete(self) -> None:
+            """Удаление"""
+
+            # Удаление ракеты
+            self.remove_from_sprite_lists()
+
+            # Воспроизведение звуков
+            self.rocket_explosive.play(volume=sounds_volume.enemies)
+
+            # Создание частиц
+            self.parent.view.emitters.append(self.make_explosion())
+            self.parent.view.emitters.append(self.make_smoke_puff())
+
+        # Частицы
+        def gravity_drag(self, particle: FadeParticle) -> None:
+            """Изменение скорости частицы"""
+
+            particle.change_y += -0.025
+            particle.change_x *= 0.9
+            particle.change_y *= 0.9
+
+        def smoke_mutator(self, particle: FadeParticle) -> None:
+            """Раздувание дыма"""
+
+            particle.scale_x *= 1.02
+            particle.scale_y *= 1.02
+            particle.alpha = max(0, particle.alpha - 2)
+
+        def make_explosion(self) -> Emitter:
+            """Эффект взрыва для ракеты"""
+
+            emitter: Emitter = Emitter(
+                center_xy=(self.center_x, self.center_y),
+                emit_controller=EmitBurst(20),
+                particle_factory=lambda e: FadeParticle(
+                    filename_or_texture=self.EXPLOSIVE_SPARK,
+                    change_xy=arcade.math.rand_in_circle((0.0, 0.0), 7.0),
+                    lifetime=uniform(0.2, 0.4),
+                    start_alpha=200, end_alpha=0,
+                    scale=uniform(0.5, 1.0),
+                    mutation_callback=self.gravity_drag,
+                )
+            )
+
+            return emitter
+
+        def make_smoke_puff(self):
+            """Эффект дыма для ракеты"""
+
+            emitter: Emitter = Emitter(
+                center_xy=(self.center_x, self.center_y),
+                emit_controller=EmitBurst(4),
+                particle_factory=lambda e: FadeParticle(
+                    filename_or_texture=self.EXPLOSIVE_SMOKE,
+                    change_xy=arcade.math.rand_in_circle((0.0, 0.0), 1.5),
+                    lifetime=uniform(0.3, 0.5),
+                    start_alpha=255, end_alpha=0,
+                    scale=uniform(1.5, 2.0),
+                    mutation_callback=self.smoke_mutator,
+                ),
+            )
+
+            return emitter
 
     def __init__(self, *args, **kwargs):
         super().__init__(self.prototype_name, *args, **kwargs)
@@ -253,6 +335,7 @@ class BossEnemy(Enemy):
 
         # Загрузка звуков
         self.boss_soundtrack: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["boss_soundtrack"])
+        self.attack_sound: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["attack_sound"])
         self.dead_sound: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["dead_sound"])
 
         # Показатели призывной атаки
@@ -278,7 +361,7 @@ class BossEnemy(Enemy):
         self.attack_animation_running: bool = False
         self.attack_animation_frame: int = 0
         self.attack_animation_duration: float = 0.0
-        self.attack_animation_speed: float = 1 / 4
+        self.attack_animation_speed: float = 1 / 10
 
         # Атаки
         arcade.schedule(self.start_spawn_enemies, self.spawn_attack_rate)
@@ -291,31 +374,38 @@ class BossEnemy(Enemy):
     def update(self, delta_time: float = 1 / 60) -> None:
         super().update()
 
-        # Создание врагов из очереди призыва
-        self.spawn_enemies(delta_time)
+        if not self.is_dead:
+            # Создание врагов из очереди призыва
+            self.spawn_enemies(delta_time)
 
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         super().update_animation(delta_time)
 
-        # Анимация атаки
-        if self.attack_animation_running:
-            self.attack_animation_duration += delta_time
-            if self.attack_animation_duration >= self.attack_animation_speed:
-                self.attack_animation_frame = (self.attack_animation_frame + 1) % len(self.attack_animation_textures)
-                self.texture = self.attack_animation_textures[self.attack_animation_frame]
+        if not self.is_dead:
+            # Анимация атаки
+            if self.attack_animation_running:
+                self.attack_animation_duration += delta_time
+                if self.attack_animation_duration >= self.attack_animation_speed:
+                    self.attack_animation_frame = (self.attack_animation_frame + 1) % len(
+                        self.attack_animation_textures)
+                    self.texture = self.attack_animation_textures[self.attack_animation_frame]
 
-                self.attack_animation_duration = 0.0
-        else:
-            # Обновление анимации
-            self.attack_animation_frame: int = 0
-            self.attack_animation_duration: float = 0.0
-            self.texture = self.idle_texture
+                    self.attack_animation_duration = 0.0
+            else:
+                # Обновление анимации
+                self.attack_animation_frame: int = 0
+                self.attack_animation_duration: float = 0.0
+                self.texture = self.idle_texture
 
     def start_spawn_enemies(self, *args) -> None:
         """Добавление врагов в очередь призыва"""
 
+        # Воспроизведение звуков
+        self.attack_sound.play(volume=sounds_volume.enemies)
+
         # Запуск анимации
         self.attack_animation_running = True
+
         # Добавление врагов в очередь призыва
         self.spawn_queue.extend(choices([BasicEnemy, FastEnemy, BigEnemy, PushEnemy], k=6))
 
@@ -338,6 +428,9 @@ class BossEnemy(Enemy):
 
     def spawn_rockets(self, *args) -> None:
         """Создание ракет"""
+
+        # Воспроизведение звуков
+        self.attack_sound.play(volume=sounds_volume.enemies)
 
         # Подбор трёх случайных башен
         targets: list = sample(
@@ -394,7 +487,7 @@ class BossEnemy(Enemy):
         super().dead()
 
         # Воспроизведение звуков
-        self.dead_sound.play(volume=sounds_volume.others)
+        self.dead_sound.play(volume=sounds_volume.enemies)
 
         # Снятие всех авто вызовов
         arcade.unschedule(self.start_spawn_enemies)
