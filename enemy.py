@@ -211,10 +211,10 @@ class BossEnemy(Enemy):
     class Rocket(arcade.Sprite):
         """Ракета"""
 
-        def __init__(self, change_x, change_y, stun_duration, parent, *args, **kwargs):
+        def __init__(self, speed, stun_duration, parent, *args, **kwargs):
             super().__init__(*args, **kwargs)
             # Создание атрибутов из аргументов
-            self.change_x, self.change_y = change_x, change_y
+            self.speed = speed
             self.stun_duration: float = stun_duration
             self.parent: BossEnemy = parent
 
@@ -228,10 +228,13 @@ class BossEnemy(Enemy):
                 ENEMIES[self.parent.prototype_name]["rocket_explosive"]
             )
 
+            # Физический движок для движения
+            self.physics_engine = arcade.PhysicsEngineSimple(self)
+
         def update(self, delta_time: float = 1 / 60) -> None:
             # Обновление позиции
-            self.center_x += self.change_x * delta_time
-            self.center_y += self.change_y * delta_time
+            self.change_y = self.speed * delta_time
+            self.physics_engine.update()
 
             # Оглушение башни
             self.hit()
@@ -245,14 +248,17 @@ class BossEnemy(Enemy):
                 # Оглушение башни
                 target.stunned_time += self.stun_duration
 
-                # Удаление ракеты
-                self.delete()
+                # Взрыв ракеты
+                self.explosive()
 
-        def delete(self) -> None:
-            """Удаление"""
+        def explosive(self):
+            """Взрыв"""
 
             # Удаление ракеты
-            self.remove_from_sprite_lists()
+            self.delete()
+
+            # Тряска камеры
+            self.parent.view.camera_shake.start()
 
             # Воспроизведение звуков
             self.rocket_explosive.play(volume=sounds_volume.enemies)
@@ -260,6 +266,12 @@ class BossEnemy(Enemy):
             # Создание частиц
             self.parent.view.emitters.append(self.make_explosion())
             self.parent.view.emitters.append(self.make_smoke_puff())
+
+        def delete(self) -> None:
+            """Удаление"""
+
+            # Удаление ракеты
+            self.remove_from_sprite_lists()
 
         # Частицы
         def gravity_drag(self, particle: FadeParticle) -> None:
@@ -444,7 +456,7 @@ class BossEnemy(Enemy):
 
             # Создание ракеты
             rocket = self.Rocket(
-                0, self.rocket_speed * rocket_direction, self.rocket_stun_duration, self,
+                self.rocket_speed * rocket_direction, self.rocket_stun_duration, self,
                 path_or_texture=self.rocket_texture, scale=ENEMY_SCALING * (2 / 3),
                 center_x=target.center_x, center_y=target.center_y + 32 * ENEMY_SCALING * 10 * -rocket_direction,
                 angle=180 if rocket_direction == -1 else 0

@@ -437,6 +437,7 @@ class Level(arcade.View):
         # Камеры
         self.world_camera: arcade.Camera2D | None = None
         self.gui_camera: arcade.Camera2D | None = None
+        self.camera_shake: arcade.camera.grips.ScreenShake2D | None = None
 
         # Частицы
         self.emitters: list | None = None
@@ -506,6 +507,14 @@ class Level(arcade.View):
         self.world_camera = arcade.camera.Camera2D()
         self.world_camera.position = self.world_width * 0.5, self.world_height * 0.5
         self.gui_camera = arcade.camera.Camera2D()
+        # Тряска камеры при больших взрывах
+        self.camera_shake = arcade.camera.grips.ScreenShake2D(
+            self.world_camera.view_data,
+            max_amplitude=4.0,
+            acceleration_duration=0.1,
+            falloff_time=0.5,
+            shake_frequency=10.0,
+        )
 
         # Создание частиц
         self.emitters = []
@@ -578,6 +587,8 @@ class Level(arcade.View):
         self.clear()
 
         # Отрисовка игрового мира
+        # Тряска камеры
+        self.camera_shake.update_camera()
         self.world_camera.use()
         # Отрисовка карты
         self.background_list.draw(pixelated=True)
@@ -600,6 +611,8 @@ class Level(arcade.View):
         # Отрисовка частиц
         for emitter in self.emitters:
             emitter.draw()
+        # Тряска камеры
+        self.camera_shake.readjust_camera()
 
         # Отрисовка интерфейса
         self.gui_camera.use()
@@ -616,6 +629,8 @@ class Level(arcade.View):
 
         # Движение камеры
         self.world_camera_move(delta_time)
+        # Тряска камеры
+        self.camera_shake.update(delta_time)
 
         # Обновление волн
         if controls.skip_wave in self.keys_pressed:
@@ -695,6 +710,11 @@ class Level(arcade.View):
                 # Открытие/закрытие меню
                 self.tower_menus_open(world_x, world_y)
 
+    def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int) -> None:
+        # Зум камеры
+        self.world_camera.zoom = max(0.6, min(1.4, self.world_camera.zoom + 0.1 * scroll_y))
+        self.check_camera_borders(self.world_camera)
+
     def on_key_press(self, key: int, modifiers: int) -> None:
         # Пауза
         if key == controls.pause:
@@ -724,8 +744,8 @@ class Level(arcade.View):
 
         # Обновление позиции камеры при выходе за границы
         camera.position = (
-            min(self.world_width - self.screen_width * 0.5, max(self.screen_width * 0.5, camera.position[0])),
-            min(self.world_height - self.screen_height * 0.5, max(self.screen_height * 0.5, camera.position[1]))
+            min(self.world_width - camera.width * 0.5, max(camera.width * 0.5, camera.position[0])),
+            min(self.world_height - camera.height * 0.5, max(camera.height * 0.5, camera.position[1]))
         )
 
     def world_camera_move(self, delta_time: float) -> None:
