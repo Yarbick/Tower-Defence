@@ -1,14 +1,16 @@
-# Прочие библиотеки
+"""Сцена меню настроек"""
+
+# Csv
 import csv
 # Графика
 import arcade
 import arcade.gui
 # Стили
-import styles
+import scripts.styles.styles as styles
 # Бинды клавиатуры
-import controls
+import player_data.settings.controls.controls as controls
 # Звуки
-import sounds_volume
+import player_data.settings.sounds.sounds_volume as sounds_volume
 
 
 class SettingsMenu(arcade.View):

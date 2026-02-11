@@ -1,13 +1,15 @@
+"""Игровой объект башни"""
+
 # Графика
 import arcade
 # Звуки
-import sounds_volume
+import player_data.settings.sounds.sounds_volume as sounds_volume
 # Математические расчёты
 from math import atan2
 # Игровые объекты
-import bullet
+import scripts.game_objects.bullet as bullet
 # Прототипы
-from resources.prototypes.towers import TOWERS
+from resources.prototypes.tower_prototypes import TOWER_PROTOTYPES
 
 # Константы
 TOWER_SCALING: float = 2.0
@@ -23,25 +25,25 @@ class Tower(arcade.Sprite):
         self.view: arcade.View = view
 
         # Загрузка текстур
-        self.base_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["base_texture"])
-        self.base_max_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["base_max_texture"])
-        self.turret_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["turret_texture"])
-        self.bullet_texture: arcade.Texture = arcade.load_texture(TOWERS[tower_name]["bullet_texture"])
+        self.base_texture: arcade.Texture = arcade.load_texture(TOWER_PROTOTYPES[tower_name]["base_texture"])
+        self.base_max_texture: arcade.Texture = arcade.load_texture(TOWER_PROTOTYPES[tower_name]["base_max_texture"])
+        self.turret_texture: arcade.Texture = arcade.load_texture(TOWER_PROTOTYPES[tower_name]["turret_texture"])
+        self.bullet_texture: arcade.Texture = arcade.load_texture(TOWER_PROTOTYPES[tower_name]["bullet_texture"])
         self.attack_range_texture: arcade.Texture = arcade.load_texture(
             "resources/assets/images/towers/attack_range.png"
         )
         self.texture = self.turret_texture
 
         # Загрузка звуков
-        self.shot_sound: arcade.Sound = arcade.load_sound(TOWERS[tower_name]["shot_sound"])
+        self.shot_sound: arcade.Sound = arcade.load_sound(TOWER_PROTOTYPES[tower_name]["shot_sound"])
         self.money_sound: arcade.Sound = arcade.load_sound("resources/assets/sounds/money.wav")
 
         # Показатели башни
-        self.damage: int | float = TOWERS[tower_name]["damage"]
-        self.fire_rate: int | float = TOWERS[tower_name]["fire_rate"]
-        self.radius: int | float = TOWERS[tower_name]["radius"]
-        self.bullet_speed: int | float = TOWERS[tower_name]["bullet_speed"]
-        self.price: int = TOWERS[tower_name]["price"]
+        self.damage: int | float = TOWER_PROTOTYPES[tower_name]["damage"]
+        self.fire_rate: int | float = TOWER_PROTOTYPES[tower_name]["fire_rate"]
+        self.radius: int | float = TOWER_PROTOTYPES[tower_name]["radius"]
+        self.bullet_speed: int | float = TOWER_PROTOTYPES[tower_name]["bullet_speed"]
+        self.price: int = TOWER_PROTOTYPES[tower_name]["price"]
         self.upgrade_price: int = self.price * 0.5
         self.delete_price: int = self.price * 0.75
 

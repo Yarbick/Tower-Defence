@@ -1,14 +1,16 @@
+"""Игровой объект врага"""
+
 # Графика
 import arcade
 from arcade.particles import Emitter, EmitBurst, FadeParticle
 # Рандом
 from random import choices, choice, sample, uniform
 # Звуки
-import sounds_volume
+import player_data.settings.sounds.sounds_volume as sounds_volume
 # Игровые объекты
-import tower
+import scripts.game_objects.tower as tower
 # Прототипы
-from resources.prototypes.enemies import ENEMIES
+from resources.prototypes.enemy_prototypes import ENEMY_PROTOTYPES
 
 # Константы
 ENEMY_SCALING: float = 3.0
@@ -25,10 +27,10 @@ class Enemy(arcade.Sprite):
         self.view: arcade.View = view
 
         # Загрузка текстур
-        self.idle_texture: arcade.Texture = arcade.load_texture(ENEMIES[enemy_name]["idle_texture"])
+        self.idle_texture: arcade.Texture = arcade.load_texture(ENEMY_PROTOTYPES[enemy_name]["idle_texture"])
         self.dead_animation_textures: tuple[arcade.Texture] = tuple(
-            arcade.load_texture(ENEMIES[enemy_name]["dead_animation_textures"][i])
-            for i in range(len(ENEMIES[enemy_name]["dead_animation_textures"]))
+            arcade.load_texture(ENEMY_PROTOTYPES[enemy_name]["dead_animation_textures"][i])
+            for i in range(len(ENEMY_PROTOTYPES[enemy_name]["dead_animation_textures"]))
         )
         self.texture = self.idle_texture
 
@@ -36,11 +38,11 @@ class Enemy(arcade.Sprite):
         self.hit: arcade.Sound = arcade.load_sound("resources/assets/sounds/hit.wav")
 
         # Показатели врага
-        self.health: int = ENEMIES[enemy_name]["health"] * difficulty
-        self.armor: float = ENEMIES[enemy_name]["armor"]
-        self.speed: int = ENEMIES[enemy_name]["speed"]
-        self.damage: int = ENEMIES[enemy_name]["damage"]
-        self.kill_reward: int = ENEMIES[enemy_name]["kill_reward"]
+        self.health: int = ENEMY_PROTOTYPES[enemy_name]["health"] * difficulty
+        self.armor: float = ENEMY_PROTOTYPES[enemy_name]["armor"]
+        self.speed: int = ENEMY_PROTOTYPES[enemy_name]["speed"]
+        self.damage: int = ENEMY_PROTOTYPES[enemy_name]["damage"]
+        self.kill_reward: int = ENEMY_PROTOTYPES[enemy_name]["kill_reward"]
 
         # Направление движения
         self.direction_x: int = 0
@@ -225,7 +227,7 @@ class BossEnemy(Enemy):
 
             # Звуки
             self.rocket_explosive: arcade.Sound = arcade.load_sound(
-                ENEMIES[self.parent.prototype_name]["rocket_explosive"]
+                ENEMY_PROTOTYPES[self.parent.prototype_name]["rocket_explosive"]
             )
 
             # Физический движок для движения
@@ -329,37 +331,38 @@ class BossEnemy(Enemy):
 
         # Загрузка текстур
         self.idle_texture_1_phase: arcade.Texture = arcade.load_texture(
-            ENEMIES[self.prototype_name]["idle_texture_1_phase"]
+            ENEMY_PROTOTYPES[self.prototype_name]["idle_texture_1_phase"]
         )
         self.idle_texture_2_phase: arcade.Texture = arcade.load_texture(
-            ENEMIES[self.prototype_name]["idle_texture_2_phase"]
+            ENEMY_PROTOTYPES[self.prototype_name]["idle_texture_2_phase"]
         )
         self.attack_animation_textures_1_phase: tuple[arcade.Texture] = tuple(
-            arcade.load_texture(ENEMIES[self.prototype_name]["attack_animation_textures_1_phase"][i])
-            for i in range(len(ENEMIES[self.prototype_name]["attack_animation_textures_1_phase"]))
+            arcade.load_texture(ENEMY_PROTOTYPES[self.prototype_name]["attack_animation_textures_1_phase"][i])
+            for i in range(len(ENEMY_PROTOTYPES[self.prototype_name]["attack_animation_textures_1_phase"]))
         )
         self.attack_animation_textures_2_phase: tuple[arcade.Texture] = tuple(
-            arcade.load_texture(ENEMIES[self.prototype_name]["attack_animation_textures_2_phase"][i])
-            for i in range(len(ENEMIES[self.prototype_name]["attack_animation_textures_2_phase"]))
+            arcade.load_texture(ENEMY_PROTOTYPES[self.prototype_name]["attack_animation_textures_2_phase"][i])
+            for i in range(len(ENEMY_PROTOTYPES[self.prototype_name]["attack_animation_textures_2_phase"]))
         )
-        self.rocket_texture: arcade.Texture = arcade.load_texture(ENEMIES[self.prototype_name]["rocket_texture"])
+        self.rocket_texture: arcade.Texture = arcade.load_texture(
+            ENEMY_PROTOTYPES[self.prototype_name]["rocket_texture"])
         self.idle_texture = self.idle_texture_1_phase
 
         # Загрузка звуков
-        self.boss_soundtrack: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["boss_soundtrack"])
-        self.attack_sound: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["attack_sound"])
-        self.dead_sound: arcade.Sound = arcade.load_sound(ENEMIES[self.prototype_name]["dead_sound"])
+        self.boss_soundtrack: arcade.Sound = arcade.load_sound(ENEMY_PROTOTYPES[self.prototype_name]["boss_soundtrack"])
+        self.attack_sound: arcade.Sound = arcade.load_sound(ENEMY_PROTOTYPES[self.prototype_name]["attack_sound"])
+        self.dead_sound: arcade.Sound = arcade.load_sound(ENEMY_PROTOTYPES[self.prototype_name]["dead_sound"])
 
         # Показатели призывной атаки
-        self.spawn_attack_rate: int | float = ENEMIES[self.prototype_name]["spawn_attack_rate"]
+        self.spawn_attack_rate: int | float = ENEMY_PROTOTYPES[self.prototype_name]["spawn_attack_rate"]
         self.spawn_queue: list[Enemy] = []
-        self.spawn_rate: int | float = ENEMIES[self.prototype_name]["spawn_rate"]
+        self.spawn_rate: int | float = ENEMY_PROTOTYPES[self.prototype_name]["spawn_rate"]
         self.spawn_timer: float = 0.0
         # Показатели ракетной атаки
-        self.rocket_attack_rate: float = ENEMIES[self.prototype_name]["rocket_attack_rate"]
-        self.rockets_count: int = ENEMIES[self.prototype_name]["rockets_count"]
-        self.rocket_speed: int | float = ENEMIES[self.prototype_name]["rocket_speed"]
-        self.rocket_stun_duration: int | float = ENEMIES[self.prototype_name]["rocket_stun_duration"]
+        self.rocket_attack_rate: float = ENEMY_PROTOTYPES[self.prototype_name]["rocket_attack_rate"]
+        self.rockets_count: int = ENEMY_PROTOTYPES[self.prototype_name]["rockets_count"]
+        self.rocket_speed: int | float = ENEMY_PROTOTYPES[self.prototype_name]["rocket_speed"]
+        self.rocket_stun_duration: int | float = ENEMY_PROTOTYPES[self.prototype_name]["rocket_stun_duration"]
         # Порог здоровья для перехода на вторую фазу
         self.health_for_2_phase: int | float = self.health // 2
 

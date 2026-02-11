@@ -1,8 +1,10 @@
+"""Игровой объект вражеских волн"""
+
 # Графика
 import arcade
 # Звуки
 import pyglet.media
-import sounds_volume
+import player_data.settings.sounds.sounds_volume as sounds_volume
 
 
 class Waves:

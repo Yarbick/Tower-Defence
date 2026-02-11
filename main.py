@@ -1,7 +1,9 @@
+"""Запуск"""
+
 # Графика
 import arcade
 # Главное меню
-from main_menu import MainMenu
+from scripts.scenes.main_menu import MainMenu
 
 
 def main() -> None:

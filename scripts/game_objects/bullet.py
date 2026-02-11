@@ -1,3 +1,5 @@
+"""Игровой объект пули"""
+
 # Графика
 import arcade
 from arcade.particles import Emitter, EmitBurst, FadeParticle
@@ -6,7 +8,7 @@ from random import choice, uniform
 # Математические расчёты
 from math import atan2, sin, cos
 # Игровые объекты
-import enemy
+import scripts.game_objects.enemy as enemy
 
 # Константы
 BULLET_SCALE: float = 2.0

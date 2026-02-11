@@ -1,3 +1,5 @@
+"""Стили для виджетов"""
+
 import arcade.gui
 
 uiflatbutton_basic: dict = {

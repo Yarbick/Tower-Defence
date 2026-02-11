@@ -1,25 +1,28 @@
+"""Сцена игрового уровня"""
+
 # Прочие библиотеки
-import csv
 from inspect import getmembers
+# Csv
+import csv
 # Графика
 import arcade
 import arcade.gui
 from pyglet.graphics import Batch
 # Звуки
 import pyglet.media
-import sounds_volume
+import player_data.settings.sounds.sounds_volume as sounds_volume
 # Бинды клавиатуры
-import controls
+import player_data.settings.controls.controls as controls
 # Стили
-import styles
+import scripts.styles.styles as styles
 # Сцены
-from pause_menu import PauseMenu
+from scripts.scenes.pause_menu import PauseMenu
 # Игровые объекты
-import tower
-import enemy
-import waves
+import scripts.game_objects.tower as tower
+import scripts.game_objects.enemy as enemy
+import scripts.game_objects.waves as waves
 # Данные игрока
-import player_data
+import player_data.saves.player_data as player_data
 
 # Константы
 TILEMAP_SCALING: float = 2.0

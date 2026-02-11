@@ -1,3 +1,6 @@
+"""Прототипы врагов"""
+
+# Графика
 from arcade import load_texture
 
 # Макет прототипа врага:
@@ -11,7 +14,7 @@ from arcade import load_texture
 #   "kill_reward": награда за убийство
 # }
 
-ENEMIES = {
+ENEMY_PROTOTYPES = {
     "basic_enemy": {
         "idle_texture": "resources/assets/images/enemies/basic_enemy/idle.png",
         "dead_animation_textures": tuple(

@@ -1,3 +1,5 @@
+"""Прототипы башен"""
+
 # Макет прототипа башни:
 # "<имя>": {
 #   "base_texture": путь к текстуре с основанием
@@ -11,7 +13,7 @@
 #   "price": цена покупки
 # }
 
-TOWERS = {
+TOWER_PROTOTYPES = {
     "basic_tower": {
         "base_texture": "resources/assets/images/towers/basic_tower/base.png",
         "base_max_texture": "resources/assets/images/towers/basic_tower/base_max.png",

@@ -1,4 +1,7 @@
-import enemy
+"""Прототипы игровых уровней"""
+
+# Игровые объекты
+import scripts.game_objects.enemy as enemy
 
 # Макет прототипа уровня:
 # "<имя>": {
@@ -10,7 +13,7 @@ import enemy
 #   "reward": награда за прохождение уровня
 # }
 
-LEVELS = {
+LEVEL_PROTOTYPES = {
     "The first steps": {
         "tilemap": "resources/levels/level1.tmx",
         "background_soundtrack": "resources/assets/sounds/soundtracks/level_1.mp3",

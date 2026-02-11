@@ -1,6 +1,9 @@
+"""Загрузка биндов"""
+
 # Прочие библиотеки
-import csv
 from inspect import getmembers
+# Csv
+import csv
 # Клавиши
 import arcade.key
 
@@ -24,6 +27,6 @@ def set_controls(new_controls_data: dict) -> None:
 
 
 # Получение биндов из файла
-with open("player_data/settings/controls.csv", mode="r", encoding="UTF-8") as file:
+with open("player_data/settings/controls/controls.csv", mode="r", encoding="UTF-8") as file:
     # Назначение биндов
     set_controls({action: int(key) for action, key in tuple(csv.reader(file))[1:]})

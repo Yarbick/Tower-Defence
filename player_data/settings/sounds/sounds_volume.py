@@ -1,3 +1,6 @@
+"""Загрузка громкости звука"""
+
+# Csv
 import csv
 
 
@@ -14,6 +17,6 @@ def set_volumes(new_volume_data: dict) -> None:
 
 
 # Получение громкости звуков из файла
-with open("player_data/settings/sounds.csv", mode="r", encoding="UTF-8") as file:
+with open("player_data/settings/sounds/sounds_volume.csv", mode="r", encoding="UTF-8") as file:
     # Назначение громкости звуков
     set_volumes({sound_type: float(volume) for sound_type, volume in tuple(csv.reader(file))[1:]})

@@ -1,14 +1,16 @@
+"""Сцена главного меню"""
+
 # Графика
 import arcade
 import arcade.gui
 # Звуки
 import pyglet.media
-import sounds_volume
+import player_data.settings.sounds.sounds_volume as sounds_volume
 # Сцены
-from levels_menu import LevelsMenu
-from settings_menu import SettingsMenu
+from scripts.scenes.levels_menu import LevelsMenu
+from scripts.scenes.settings_menu import SettingsMenu
 # Стили
-import styles
+import scripts.styles.styles as styles
 
 # Константы
 TILEMAP_SCALING: float = 2.0

@@ -1,15 +1,17 @@
+"""Сцена меню выбора уровней"""
+
 # Графика
 import arcade
 import arcade.gui
 from pyglet.graphics import Batch
 # Уровни
-from level import Level
+from scripts.scenes.level import Level
 # Прототипы
-from resources.prototypes.levels import LEVELS
+from resources.prototypes.level_prototypes import LEVEL_PROTOTYPES
 # Данные игрока
-import player_data
+import player_data.saves.player_data as player_data
 # Стили
-import styles
+import scripts.styles.styles as styles
 
 
 class LevelsMenu(arcade.View):
@@ -101,7 +103,7 @@ class LevelsMenu(arcade.View):
             vertical=True, space_between=10
         )
         # Добавление кнопок
-        for level_name in LEVELS:
+        for level_name in LEVEL_PROTOTYPES:
             level_button = self.LevelButton(
                 level_name,
                 width=self.screen_width - self.levels_layout.left * 2, text=level_name, style=styles.uiflatbutton_basic
