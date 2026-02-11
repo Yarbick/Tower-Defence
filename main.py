@@ -11,10 +11,12 @@ def main() -> None:
     window = arcade.Window(1000, 800, "Tower Defence", resizable=True)
     window.set_minimum_size(800, 600)
     window.set_maximum_size(1920, 1080)
+
     # Главное меню
     main_menu_view = MainMenu()
     main_menu_view.setup()
     window.show_view(main_menu_view)
+
     # Запуск
     arcade.run()
 
