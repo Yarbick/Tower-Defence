@@ -699,8 +699,10 @@ class Level(arcade.View):
             return
 
         # Нахождение координат клика относительно тайлов игрового мира
-        world_x: float = ((self.world_camera.position[0] - self.screen_width * 0.5 + x) // TILE_SIZE + 0.5) * TILE_SIZE
-        world_y: float = ((self.world_camera.position[1] - self.screen_height * 0.5 + y) // TILE_SIZE + 0.5) * TILE_SIZE
+        world_x: float = ((self.world_camera.position[0] - self.world_camera.width * (
+                    0.5 - x / self.screen_width)) // TILE_SIZE + 0.5) * TILE_SIZE
+        world_y: float = ((self.world_camera.position[1] - self.world_camera.height * (
+                    0.5 - y / self.screen_height)) // TILE_SIZE + 0.5) * TILE_SIZE
 
         # Проверка на клик по меню
         if not (self.is_widget_clicked(self.add_tower_menu, x, y) or

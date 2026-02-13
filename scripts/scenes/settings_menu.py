@@ -61,7 +61,7 @@ class SettingsMenu(arcade.View):
 
             # Запись изменений биндов в файл
             controls.set_controls(settings_menu_view.controls_parameters)
-            with open("player_data/settings/controls.csv", mode="w", encoding="UTF-8", newline="") as file:
+            with open("player_data/settings/controls/controls.csv", mode="w", encoding="UTF-8", newline="") as file:
                 writer = csv.writer(file)
                 writer.writerow(["action", "key"])
 
@@ -71,7 +71,7 @@ class SettingsMenu(arcade.View):
                 )
             # Запись изменений звуков в файл
             sounds_volume.set_volumes(settings_menu_view.sounds_parameters)
-            with open("player_data/settings/sounds.csv", mode="w", encoding="UTF-8", newline="") as file:
+            with open("player_data/settings/sounds/sounds_volume.csv", mode="w", encoding="UTF-8", newline="") as file:
                 writer = csv.writer(file)
                 writer.writerow(["sound_type", "volume"])
 
