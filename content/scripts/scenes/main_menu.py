@@ -7,10 +7,10 @@ import arcade.gui
 import pyglet.media
 import player_data.settings.sounds.sounds_volume as sounds_volume
 # Сцены
-from scripts.scenes.levels_menu import LevelsMenu
-from scripts.scenes.settings_menu import SettingsMenu
+from content.scripts.scenes.levels_menu import LevelsMenu
+from content.scripts.scenes.settings_menu import SettingsMenu
 # Стили
-import scripts.styles.styles as styles
+import content.scripts.styles.styles as styles
 
 # Константы
 TILEMAP_SCALING: float = 2.0
@@ -63,12 +63,12 @@ class MainMenu(arcade.View):
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
 
         # Загружаем шрифты
-        arcade.load_font("resources/assets/fonts/CGXYZLCD/CGXYZLCD-Regular.otf")
+        arcade.load_font("content/resources/assets/fonts/CGXYZLCD/CGXYZLCD-Regular.otf")
         # Загружаем текстуры
-        self.logo_texture: arcade.Texture = arcade.load_texture("resources/assets/images/logo/logo_text.png")
+        self.logo_texture: arcade.Texture = arcade.load_texture("content/resources/assets/images/logo/logo_text.png")
         # Загружаем саундтреки
         self.background_soundtrack: arcade.Sound = arcade.load_sound(
-            "resources/assets/sounds/soundtracks/main_menu.mp3", streaming=True
+            "content/resources/assets/sounds/soundtracks/main_menu.mp3", streaming=True
         )
 
         # Размер окна
@@ -124,7 +124,7 @@ class MainMenu(arcade.View):
         self.ui_manager.add(self.exit_button)
 
         # Загрузка карты
-        tilemap: arcade.TileMap = arcade.load_tilemap("resources/levels/menu.tmx", scaling=TILEMAP_SCALING)
+        tilemap: arcade.TileMap = arcade.load_tilemap("content/resources/levels/menu.tmx", scaling=TILEMAP_SCALING)
         self.background_list = tilemap.sprite_lists["background"]
         # Получение размеров карты
         self.world_width, self.world_height = tilemap.width * TILE_SIZE, tilemap.height * TILE_SIZE

@@ -4,11 +4,11 @@
 import arcade
 from arcade.particles import Emitter, EmitBurst, FadeParticle
 # Рандом
-from random import choice, uniform
+from random import uniform
 # Математические расчёты
 from math import atan2, sin, cos
 # Игровые объекты
-import scripts.game_objects.enemy as enemy
+import content.scripts.game_objects.enemy as enemy
 
 # Константы
 BULLET_SCALE: float = 2.0
@@ -77,7 +77,7 @@ class ExplosiveBullet(Bullet):
         # Область взрыва
         self.explosive_radius: int = 3
         self.explosive_range: arcade.Sprite = arcade.Sprite(
-            "resources/assets/images/towers/attack_range.png",
+            "content/resources/assets/images/towers/attack_range.png",
             scale=self.explosive_radius * BULLET_SCALE
         )
 

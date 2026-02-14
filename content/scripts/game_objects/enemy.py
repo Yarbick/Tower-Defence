@@ -8,9 +8,8 @@ from random import choices, choice, sample, uniform
 # Звуки
 import player_data.settings.sounds.sounds_volume as sounds_volume
 # Игровые объекты
-import scripts.game_objects.tower as tower
 # Прототипы
-from resources.prototypes.enemy_prototypes import ENEMY_PROTOTYPES
+from content.resources.prototypes.enemy_prototypes import ENEMY_PROTOTYPES
 
 # Константы
 ENEMY_SCALING: float = 3.0
@@ -35,7 +34,7 @@ class Enemy(arcade.Sprite):
         self.texture = self.idle_texture
 
         # Загрузка звуков
-        self.hit: arcade.Sound = arcade.load_sound("resources/assets/sounds/hit.wav")
+        self.hit: arcade.Sound = arcade.load_sound("content/resources/assets/sounds/hit.wav")
 
         # Показатели врага
         self.health: int = ENEMY_PROTOTYPES[enemy_name]["health"] * difficulty
@@ -110,8 +109,9 @@ class Enemy(arcade.Sprite):
 
                 # Нанесение урона базе
                 self.view.player_health -= self.damage
-                # Вычитание стоимости врага от денег игрока
+                # Вычитание стоимости врага от денег очков игрока
                 self.view.player_money -= self.kill_reward
+                self.view.player_score -= self.kill_reward * 0.5
 
                 # Смерть
                 self.dead()
@@ -162,8 +162,9 @@ class Enemy(arcade.Sprite):
         # Переключение флага
         self.is_dead = True
 
-        # Начисление денег игроку
+        # Начисление денег и очков игроку
         self.view.player_money += self.kill_reward
+        self.view.player_score += self.kill_reward * 0.5
 
         # Запуск анимации
         self.dead_animation_running = True

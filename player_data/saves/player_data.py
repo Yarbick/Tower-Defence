@@ -3,8 +3,8 @@
 # Csv
 import csv
 # Прототипы
-from resources.prototypes.level_prototypes import LEVEL_PROTOTYPES
-from resources.prototypes.tower_prototypes import TOWER_PROTOTYPES
+from content.resources.prototypes.level_prototypes import LEVEL_PROTOTYPES
+from content.resources.prototypes.tower_prototypes import TOWER_PROTOTYPES
 
 
 def get_available_levels() -> None:

@@ -6,7 +6,7 @@ import csv
 import arcade
 import arcade.gui
 # Стили
-import scripts.styles.styles as styles
+import content.scripts.styles.styles as styles
 # Бинды клавиатуры
 import player_data.settings.controls.controls as controls
 # Звуки

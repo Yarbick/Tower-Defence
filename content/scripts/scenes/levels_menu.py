@@ -5,13 +5,13 @@ import arcade
 import arcade.gui
 from pyglet.graphics import Batch
 # Уровни
-from scripts.scenes.level import Level
+from content.scripts.scenes.level import Level
 # Прототипы
-from resources.prototypes.level_prototypes import LEVEL_PROTOTYPES
+from content.resources.prototypes.level_prototypes import LEVEL_PROTOTYPES
 # Данные игрока
 import player_data.saves.player_data as player_data
 # Стили
-import scripts.styles.styles as styles
+import content.scripts.styles.styles as styles
 
 
 class LevelsMenu(arcade.View):
@@ -52,9 +52,6 @@ class LevelsMenu(arcade.View):
         super().__init__()
         arcade.set_background_color(arcade.color.Color.from_hex_string("#1A1A1A"))
         self.parent: arcade.View = parent
-
-        # Загружаем шрифты
-        arcade.load_font("resources/assets/fonts/CGXYZLCD/CGXYZLCD-Regular.otf")
 
         # Размер окна
         self.screen_width: int | None = None

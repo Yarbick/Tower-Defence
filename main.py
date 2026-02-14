@@ -4,7 +4,7 @@
 import arcade
 from pyglet.image import load as load_image
 # Главное меню
-from scripts.scenes.main_menu import MainMenu
+from content.scripts.scenes.main_menu import MainMenu
 
 
 def main() -> None:
@@ -13,7 +13,7 @@ def main() -> None:
     window.set_minimum_size(800, 600)
     window.set_maximum_size(1920, 1080)
     # Иконка
-    icon_image = load_image("resources/assets/images/logo/logo_icon.png")
+    icon_image = load_image("content/resources/assets/images/logo/logo_icon.png")
     window.set_icon(icon_image)
 
     # Главное меню

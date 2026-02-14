@@ -14,13 +14,12 @@ import player_data.settings.sounds.sounds_volume as sounds_volume
 # Бинды клавиатуры
 import player_data.settings.controls.controls as controls
 # Стили
-import scripts.styles.styles as styles
+import content.scripts.styles.styles as styles
 # Сцены
-from scripts.scenes.pause_menu import PauseMenu
+from content.scripts.scenes.pause_menu import PauseMenu
 # Игровые объекты
-import scripts.game_objects.tower as tower
-import scripts.game_objects.enemy as enemy
-import scripts.game_objects.waves as waves
+import content.scripts.game_objects.tower as tower
+import content.scripts.game_objects.waves as waves
 # Данные игрока
 import player_data.saves.player_data as player_data
 
@@ -145,7 +144,7 @@ class Level(arcade.View):
                 if tower_class:
                     button = self.AddTowerButton(
                         adding_tower=tower_class, width=50, height=50,
-                        texture=arcade.load_texture(f"resources/assets/images/towers/{tower_name}/base.png")
+                        texture=arcade.load_texture(f"content/resources/assets/images/towers/{tower_name}/base.png")
                     )
                     label = arcade.gui.UILabel(
                         text=str(player_data.towers[tower_name]["price"]), font_name="CGXYZ LCD", font_size=6
@@ -358,8 +357,8 @@ class Level(arcade.View):
 
             # Загрузка звуков
             self.result_sound: arcade.Sound = arcade.load_sound(
-                "resources/assets/sounds/game_over/win.wav" if game_result
-                else "resources/assets/sounds/game_over/defeat.wav"
+                "content/resources/assets/sounds/game_over/win.wav" if game_result
+                else "content/resources/assets/sounds/game_over/defeat.wav"
             )
 
             # Заголовок
@@ -369,6 +368,25 @@ class Level(arcade.View):
                 font_name="CGXYZ LCD", font_size=20
             )
             self.add(self.header_text)
+
+            # Результаты игры
+            self.result_layout = arcade.gui.UIBoxLayout(vertical=True, space_between=10)
+            self.add(self.result_layout)
+            # Пройденные волны
+            waves_passed_text = arcade.gui.UILabel(
+                text=f"Waves passed: {max(
+                    0, len(player_data.levels[self.view.level_name]["waves"]) - len(self.view.waves.waves)
+                )}",
+                text_color=arcade.color.WHITE, font_name="CGXYZ LCD", font_size=12
+            )
+            self.result_layout.add(waves_passed_text)
+            # Счёт
+            score_text = arcade.gui.UILabel(
+                text=f"Score: {round(self.view.player_score)}",
+                text_color=arcade.color.WHITE, font_name="CGXYZ LCD", font_size=12
+            )
+            self.result_layout.add(score_text)
+            self.result_layout.fit_content()
 
             # Кнопка возвращения в главное меню
             self.return_to_main_menu_button = self.ReturnToMenuButton(
@@ -387,14 +405,18 @@ class Level(arcade.View):
 
             # Заголовок
             self.header_text.center_x = self.view.screen_width * 0.5
-            self.header_text.center_y = self.view.screen_height * 0.5 + self.height * 0.25
+            self.header_text.center_y = self.view.screen_height * 0.5 + self.height * 0.3
+
+            # Результаты
+            self.result_layout.center_x = self.header_text.center_x
+            self.result_layout.center_y = self.view.screen_height * 0.5
 
             # Кнопка возвращения в главное меню
-            self.return_to_main_menu_button.center_x = self.view.screen_width * 0.5
-            self.return_to_main_menu_button.center_y = self.view.screen_height * 0.5 - self.height * 0.25
+            self.return_to_main_menu_button.center_x = self.header_text.center_x
+            self.return_to_main_menu_button.center_y = self.view.screen_height * 0.5 - self.height * 0.3
 
             # Главный виджет
-            self.center_x = self.view.screen_width * 0.5
+            self.center_x = self.header_text.center_x
             self.center_y = self.view.screen_height * 0.5
 
     def __init__(self, level_name: str, parent: arcade.View):
@@ -447,7 +469,8 @@ class Level(arcade.View):
 
         # Атрибуты для логики игры
         self.player_health: int | None = None
-        self.player_money: int | None = None
+        self.player_money: int | float | None = None
+        self.player_score: int | float | None = None
         self.game_status: bool | None = None  # None - игра не закончена, False - поражение, True - победа
 
         # Атрибуты интерфейса
@@ -525,6 +548,7 @@ class Level(arcade.View):
         # Обновление атрибутов логики игры до значений по умолчанию
         self.player_health = 20
         self.player_money = 200
+        self.player_score = 0
         self.game_status = None
 
         # Создание интерфейса:
@@ -539,7 +563,13 @@ class Level(arcade.View):
         # Деньги игрока
         self.money_text = arcade.Text(
             f"Money: {round(self.player_money)}",
-            260, self.screen_height - 20, arcade.color.WHITE,
+            self.health_text.right + 30, self.screen_height - 20, arcade.color.WHITE,
+            font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
+        )
+        # Очки игрока
+        self.score_text = arcade.Text(
+            f"Score: {round(self.player_money)}",
+            self.money_text.right + 30, self.screen_height - 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="top", batch=self.batch
         )
         # Номер волны
@@ -551,13 +581,13 @@ class Level(arcade.View):
         # Время до новой волны
         self.time_left_text = arcade.Text(
             f"Time left: {int(max(0, self.waves.wave_rate - self.waves.wave_timer))}",
-            200, 20, arcade.color.WHITE,
+            self.wave_number_text.right + 30, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
         # Подсказка о пропуске волны
         self.skip_text = arcade.Text(
             f"SKIP",
-            470, 20, arcade.color.WHITE,
+            self.time_left_text.right + 40, 20, arcade.color.WHITE,
             font_name="CGXYZ LCD", anchor_x="left", anchor_y="bottom", batch=self.batch
         )
 
@@ -665,6 +695,7 @@ class Level(arcade.View):
         # Текст
         self.health_text.text = f"Health: {max(0, self.player_health)}"
         self.money_text.text = f"Money: {round(self.player_money)}"
+        self.score_text.text = f"Score: {round(self.player_score)}"
         self.wave_number_text.text = f"Wave: {max(
             0, len(player_data.levels[self.level_name]["waves"]) - len(self.waves.waves)
         )}"
@@ -687,6 +718,7 @@ class Level(arcade.View):
         # Настройка интерфейса под новые размеры
         self.health_text.y = self.screen_height - 20
         self.money_text.y = self.screen_height - 20
+        self.score_text.y = self.screen_height - 20
 
         self.add_tower_menu.match_window()
         self.edit_tower_menu.match_window()
@@ -700,9 +732,9 @@ class Level(arcade.View):
 
         # Нахождение координат клика относительно тайлов игрового мира
         world_x: float = ((self.world_camera.position[0] - self.world_camera.width * (
-                    0.5 - x / self.screen_width)) // TILE_SIZE + 0.5) * TILE_SIZE
+                0.5 - x / self.screen_width)) // TILE_SIZE + 0.5) * TILE_SIZE
         world_y: float = ((self.world_camera.position[1] - self.world_camera.height * (
-                    0.5 - y / self.screen_height)) // TILE_SIZE + 0.5) * TILE_SIZE
+                0.5 - y / self.screen_height)) // TILE_SIZE + 0.5) * TILE_SIZE
 
         # Проверка на клик по меню
         if not (self.is_widget_clicked(self.add_tower_menu, x, y) or
@@ -716,6 +748,10 @@ class Level(arcade.View):
                 self.tower_menus_open(world_x, world_y)
 
     def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int) -> None:
+        # Проверка на конец игры
+        if self.game_status is not None:
+            return
+
         # Зум камеры
         self.world_camera.zoom = max(0.6, min(1.4, self.world_camera.zoom + 0.1 * scroll_y))
         self.check_camera_borders(self.world_camera)

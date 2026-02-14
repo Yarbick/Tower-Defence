@@ -4,7 +4,7 @@
 import arcade
 import arcade.gui
 # Стили
-import scripts.styles.styles as styles
+import content.scripts.styles.styles as styles
 
 
 class PauseMenu(arcade.View):

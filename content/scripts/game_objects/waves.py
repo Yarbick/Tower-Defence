@@ -13,7 +13,7 @@ class Waves:
         self.view: arcade.View = view
 
         # Загрузка звуков
-        self.wave_appear: arcade.Sound = arcade.load_sound("resources/assets/sounds/wave_appear.wav")
+        self.wave_appear: arcade.Sound = arcade.load_sound("content/resources/assets/sounds/wave_appear.wav")
 
         # Список волн
         self.waves: list = [list(wave) for wave in waves]

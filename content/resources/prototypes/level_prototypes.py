@@ -1,7 +1,7 @@
 """Прототипы игровых уровней"""
 
 # Игровые объекты
-import scripts.game_objects.enemy as enemy
+import content.scripts.game_objects.enemy as enemy
 
 # Макет прототипа уровня:
 # "<имя>": {
@@ -15,8 +15,8 @@ import scripts.game_objects.enemy as enemy
 
 LEVEL_PROTOTYPES = {
     "The first steps": {
-        "tilemap": "resources/levels/level1.tmx",
-        "background_soundtrack": "resources/assets/sounds/soundtracks/level_1.mp3",
+        "tilemap": "content/resources/levels/level1.tmx",
+        "background_soundtrack": "content/resources/assets/sounds/soundtracks/level_1.mp3",
         "waves": tuple([
             tuple(enemy.BasicEnemy for _ in range(5)),
             tuple(enemy.BasicEnemy for _ in range(6)),
@@ -33,8 +33,8 @@ LEVEL_PROTOTYPES = {
     },
 
     "High-speed traffic": {
-        "tilemap": "resources/levels/level2.tmx",
-        "background_soundtrack": "resources/assets/sounds/soundtracks/level_2.mp3",
+        "tilemap": "content/resources/levels/level2.tmx",
+        "background_soundtrack": "content/resources/assets/sounds/soundtracks/level_2.mp3",
         "waves": tuple([
             tuple(enemy.BasicEnemy for _ in range(5)),
             tuple(enemy.FastEnemy for _ in range(5)),
@@ -60,8 +60,8 @@ LEVEL_PROTOTYPES = {
     },
 
     "The heavyweights": {
-        "tilemap": "resources/levels/level3.tmx",
-        "background_soundtrack": "resources/assets/sounds/soundtracks/level_3.mp3",
+        "tilemap": "content/resources/levels/level3.tmx",
+        "background_soundtrack": "content/resources/assets/sounds/soundtracks/level_3.mp3",
         "waves": ([
             tuple(enemy.BasicEnemy for _ in range(5)),
             tuple(enemy.BasicEnemy for _ in range(8)),
@@ -93,8 +93,8 @@ LEVEL_PROTOTYPES = {
     },
 
     "Breakthrough": {
-        "tilemap": "resources/levels/level4.tmx",
-        "background_soundtrack": "resources/assets/sounds/soundtracks/level_4.mp3",
+        "tilemap": "content/resources/levels/level4.tmx",
+        "background_soundtrack": "content/resources/assets/sounds/soundtracks/level_4.mp3",
         "waves": tuple([
             tuple(enemy.BasicEnemy for _ in range(6)),
             tuple(enemy.FastEnemy for _ in range(6)),
@@ -126,8 +126,8 @@ LEVEL_PROTOTYPES = {
     },
 
     "The last frontier": {
-        "tilemap": "resources/levels/level5.tmx",
-        "background_soundtrack": "resources/assets/sounds/soundtracks/level_5.mp3",
+        "tilemap": "content/resources/levels/level5.tmx",
+        "background_soundtrack": "content/resources/assets/sounds/soundtracks/level_5.mp3",
         "waves": tuple([
             tuple(enemy.BasicEnemy for _ in range(6)),
             tuple(enemy.BasicEnemy for _ in range(8)),

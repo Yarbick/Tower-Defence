@@ -7,9 +7,9 @@ import player_data.settings.sounds.sounds_volume as sounds_volume
 # Математические расчёты
 from math import atan2
 # Игровые объекты
-import scripts.game_objects.bullet as bullet
+import content.scripts.game_objects.bullet as bullet
 # Прототипы
-from resources.prototypes.tower_prototypes import TOWER_PROTOTYPES
+from content.resources.prototypes.tower_prototypes import TOWER_PROTOTYPES
 
 # Константы
 TOWER_SCALING: float = 2.0
@@ -30,13 +30,13 @@ class Tower(arcade.Sprite):
         self.turret_texture: arcade.Texture = arcade.load_texture(TOWER_PROTOTYPES[tower_name]["turret_texture"])
         self.bullet_texture: arcade.Texture = arcade.load_texture(TOWER_PROTOTYPES[tower_name]["bullet_texture"])
         self.attack_range_texture: arcade.Texture = arcade.load_texture(
-            "resources/assets/images/towers/attack_range.png"
+            "content/resources/assets/images/towers/attack_range.png"
         )
         self.texture = self.turret_texture
 
         # Загрузка звуков
         self.shot_sound: arcade.Sound = arcade.load_sound(TOWER_PROTOTYPES[tower_name]["shot_sound"])
-        self.money_sound: arcade.Sound = arcade.load_sound("resources/assets/sounds/money.wav")
+        self.money_sound: arcade.Sound = arcade.load_sound("content/resources/assets/sounds/money.wav")
 
         # Показатели башни
         self.damage: int | float = TOWER_PROTOTYPES[tower_name]["damage"]
