@@ -10,6 +10,8 @@ from content.scripts.scenes.level import Level
 from content.resources.prototypes.level_prototypes import LEVEL_PROTOTYPES
 # Данные игрока
 import player_data.saves.player_data as player_data
+# Бинды клавиатуры
+import player_data.settings.controls.controls as controls
 # Стили
 import content.scripts.styles.styles as styles
 
@@ -149,3 +151,9 @@ class LevelsMenu(arcade.View):
     def on_hide_view(self) -> None:
         # Отключение процессов меню уровней
         self.ui_manager.disable()
+
+    def on_key_press(self, key: int, modifiers: int) -> None:
+        # Окно на весь экран
+        if key == controls.fullscreen:
+            window: arcade.Window = arcade.get_window()
+            window.set_fullscreen(not window.fullscreen)

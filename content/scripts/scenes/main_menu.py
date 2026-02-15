@@ -6,6 +6,8 @@ import arcade.gui
 # Звуки
 import pyglet.media
 import player_data.settings.sounds.sounds_volume as sounds_volume
+# Бинды клавиатуры
+import player_data.settings.controls.controls as controls
 # Сцены
 from content.scripts.scenes.levels_menu import LevelsMenu
 from content.scripts.scenes.settings_menu import SettingsMenu
@@ -192,3 +194,9 @@ class MainMenu(arcade.View):
         # Отключение процессов главного меню
         self.background_soundtrack.stop(self.background_soundtrack_player)
         self.ui_manager.disable()
+
+    def on_key_press(self, key: int, modifiers: int) -> None:
+        # Окно на весь экран
+        if key == controls.fullscreen:
+            window: arcade.Window = arcade.get_window()
+            window.set_fullscreen(not window.fullscreen)

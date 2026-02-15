@@ -725,6 +725,11 @@ class Level(arcade.View):
         if self.result_widget:
             self.result_widget.match_window()
 
+    def on_hide_view(self) -> None:
+        # Отключение процессов уровня
+        self.background_soundtrack.stop(self.background_soundtrack_player)
+        self.ui_manager.disable()
+
     def on_mouse_press(self, x: int, y: int, key: int, modifiers: int) -> None:
         # Проверка на конец игры
         if self.game_status is not None:
@@ -757,6 +762,11 @@ class Level(arcade.View):
         self.check_camera_borders(self.world_camera)
 
     def on_key_press(self, key: int, modifiers: int) -> None:
+        # Окно на весь экран
+        if key == controls.fullscreen:
+            window: arcade.Window = arcade.get_window()
+            window.set_fullscreen(not window.fullscreen)
+
         # Пауза
         if key == controls.pause:
             window: arcade.Window = arcade.get_window()
@@ -774,11 +784,6 @@ class Level(arcade.View):
 
     def on_key_release(self, key: int, modifiers: int) -> None:
         self.keys_pressed.remove(key)
-
-    def on_hide_view(self) -> None:
-        # Отключение процессов уровня
-        self.background_soundtrack.stop(self.background_soundtrack_player)
-        self.ui_manager.disable()
 
     def check_camera_borders(self, camera: arcade.Camera2D) -> None:
         """Проверка камеры на выход за границы экрана"""

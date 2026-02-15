@@ -296,3 +296,9 @@ class SettingsMenu(arcade.View):
     def on_hide_view(self) -> None:
         # Отключение процессов меню настроек
         self.ui_manager.disable()
+
+    def on_key_press(self, key: int, modifiers: int) -> None:
+        # Окно на весь экран
+        if key == controls.fullscreen:
+            window: arcade.Window = arcade.get_window()
+            window.set_fullscreen(not window.fullscreen)

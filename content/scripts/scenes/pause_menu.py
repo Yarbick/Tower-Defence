@@ -3,6 +3,8 @@
 # Графика
 import arcade
 import arcade.gui
+# Бинды клавиатуры
+import player_data.settings.controls.controls as controls
 # Стили
 import content.scripts.styles.styles as styles
 
@@ -112,3 +114,9 @@ class PauseMenu(arcade.View):
     def on_hide_view(self) -> None:
         # Отключение прогрессов меню паузы
         self.ui_manager.disable()
+
+    def on_key_press(self, key: int, modifiers: int) -> None:
+        # Окно на весь экран
+        if key == controls.fullscreen:
+            window: arcade.Window = arcade.get_window()
+            window.set_fullscreen(not window.fullscreen)
