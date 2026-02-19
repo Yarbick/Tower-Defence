@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="45" height="45" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="1">
+ <tileset firstgid="1" source="tile_sheet.tsx"/>
+ <layer id="1" name="background" width="45" height="45">
+  <data encoding="base64" compression="zlib">
+   eJztlzsOwCAMQ5FQ1fvfuGsHIBDyMSSDJyqS+BlEaymlBtEL0EPKlhN3r4e5pi2P2nlu/JlKMxjt11rTyF3mSkezrLj+Jzc7Rif0ReUhel64rEe+ze5JfReFDep5k9AtDHuMEP4HvGZPnS2rt7T3TLdJkhuaX2j9eM3tcQ57NaV7icAY+R7d9T8CPw5LC+Y9762YUHWQc48qdM+0skXNbe2LdT3ke3S1t917CdmLVbVydNN8f31znRiE
+  </data>
+ </layer>
+ <layer id="2" name="enemy_base" width="45" height="45">
+  <data encoding="base64" compression="zlib">
+   eJztzjENAAAIA7Dd+BfMPwMkpFXQBAAAAGhzHQAAAABeWsQsAAs=
+  </data>
+ </layer>
+ <layer id="3" name="player_base" width="45" height="45">
+  <data encoding="base64" compression="zlib">
+   eJztzjEBAAAMAiDf9S+8GB5CAhIAAACAbdcOAAAAMOMBokgACg==
+  </data>
+ </layer>
+ <layer id="4" name="road" width="45" height="45">
+  <data encoding="base64" compression="zlib">
+   eJzt0kEKACAIBEDx/4/uGlLHyGgGRPG0iBEAAADwt5yqm122LL3ON62y1X3Xm+8yd/Zq5s5/AAAAcNIACAEAMw==
+  </data>
+ </layer>
+ <layer id="5" name="platforms" width="45" height="45">
+  <data encoding="base64" compression="zlib">
+   eJzt0jEKADEIRcF4/0uHhS2ChK22+MIMiO1DXAsAAAD+Ve8k6m29M7X7VJed1t3benOir+bEGz8m3nmy5F8AAADm2N4nAB8=
+  </data>
+ </layer>
+</map>

@@ -1,0 +1,17 @@
+altgraph==0.17.5
+arcade==3.3.3
+attrs==25.4.0
+cffi==2.0.0
+packaging==26.0
+pefile==2024.8.26
+pillow==11.3.0
+pip==26.0.1
+pycparser==3.0
+pyglet==2.1.12
+pyinstaller==6.18.0
+pyinstaller-hooks-contrib==2026.0
+pymunk==6.9.0
+pytiled_parser==2.2.9
+pywin32-ctypes==0.2.3
+setuptools==82.0.0
+typing_extensions==4.15.0
